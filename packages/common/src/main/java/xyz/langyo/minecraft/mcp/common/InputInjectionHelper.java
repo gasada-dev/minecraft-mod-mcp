@@ -23,7 +23,14 @@ public final class InputInjectionHelper {
                     java.lang.reflect.Method method = findKeyboardMethod(kbHandler.getClass());
                     if (method != null) {
                         method.setAccessible(true);
-                        method.invoke(kbHandler, handle, key, 0, action, 0);
+                        if (method.getParameterCount() == 5) {
+                            method.invoke(kbHandler, handle, key, 0, action, 0);
+                        } else {
+                            java.lang.reflect.Constructor<?> constructor = method.getParameterTypes()[2]
+                                    .getDeclaredConstructor(int.class, int.class, int.class);
+                            constructor.setAccessible(true);
+                            method.invoke(kbHandler, handle, action, constructor.newInstance(key, 0, 0));
+                        }
                         return;
                     }
                 }
@@ -54,16 +61,18 @@ public final class InputInjectionHelper {
         return null;
     }
 
-    private static java.lang.reflect.Method findKeyboardMethod(Class<?> type) {
+    static java.lang.reflect.Method findKeyboardMethod(Class<?> type) {
         java.lang.reflect.Method named = null;
         java.lang.reflect.Method fallback = null;
         boolean ambiguous = false;
         for (java.lang.reflect.Method method : ReflectionCache.getAllMethods(type)) {
             if (method.isSynthetic() || method.isBridge()) continue;
             Class<?>[] pts = method.getParameterTypes();
-            if (pts.length != 5 || pts[0] != long.class || pts[1] != int.class
-                    || pts[2] != int.class || pts[3] != int.class || pts[4] != int.class
-                    || java.lang.reflect.Modifier.isStatic(method.getModifiers())) continue;
+            boolean legacy = pts.length == 5 && pts[0] == long.class && pts[1] == int.class
+                    && pts[2] == int.class && pts[3] == int.class && pts[4] == int.class;
+            boolean modern = pts.length == 3 && pts[0] == long.class && pts[1] == int.class
+                    && !pts[2].isPrimitive();
+            if ((!legacy && !modern) || java.lang.reflect.Modifier.isStatic(method.getModifiers())) continue;
             if (method.getName().equals("keyPress")) named = method;
             else if (fallback == null) fallback = method;
             else ambiguous = true;
