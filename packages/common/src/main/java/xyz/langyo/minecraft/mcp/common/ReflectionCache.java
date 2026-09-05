@@ -244,9 +244,11 @@ public final class ReflectionCache {
     static boolean isKeyboardHandlerType(Class<?> clazz) {
         for (Method m : getAllMethods(clazz)) {
             Class<?>[] pts = m.getParameterTypes();
-            if (pts.length == 5 && pts[0] == long.class && pts[1] == int.class
-                    && pts[2] == int.class && pts[3] == int.class && pts[4] == int.class
-                    && !Modifier.isStatic(m.getModifiers())) return true;
+            boolean legacy = pts.length == 5 && pts[0] == long.class && pts[1] == int.class
+                    && pts[2] == int.class && pts[3] == int.class && pts[4] == int.class;
+            boolean modern = pts.length == 3 && pts[0] == long.class && pts[1] == int.class
+                    && !pts[2].isPrimitive();
+            if ((legacy || modern) && !Modifier.isStatic(m.getModifiers())) return true;
         }
         return false;
     }

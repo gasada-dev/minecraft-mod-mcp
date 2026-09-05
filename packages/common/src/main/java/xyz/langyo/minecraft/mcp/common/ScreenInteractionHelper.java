@@ -1242,15 +1242,20 @@ public final class ScreenInteractionHelper {
                 try { kbHandler = mc.getClass().getMethod("keyboardHandler").invoke(mc); } catch (Exception ignored) {}
             }
             if (kbHandler != null) {
-                for (Method m : kbHandler.getClass().getDeclaredMethods()) {
-                    if (m.getName().equals("keyPress") && m.getParameterCount() == 5) {
-                        long handle = 0;
-                        try { handle = WindowHelper.getWindowHandle(mc); } catch (Exception ignored) {}
+                Method m = InputInjectionHelper.findKeyboardMethod(kbHandler.getClass());
+                if (m != null) {
+                    long handle = WindowHelper.getWindowHandle(mc);
+                    m.setAccessible(true);
+                    if (m.getParameterCount() == 5) {
                         ReflectionHelper.dbg("guiKeyPress: keyPress(" + handle + "," + keyCode + "," + scanCode + "," + action + "," + modifiers + ") kb=" + kbHandler.getClass().getSimpleName());
-                        m.setAccessible(true);
                         m.invoke(kbHandler, handle, keyCode, scanCode, action, modifiers);
                         return "{\"keyPressed\":true,\"via\":\"keyboardHandler\"}";
                     }
+                    java.lang.reflect.Constructor<?> constructor = m.getParameterTypes()[2]
+                            .getDeclaredConstructor(int.class, int.class, int.class);
+                    constructor.setAccessible(true);
+                    m.invoke(kbHandler, handle, action, constructor.newInstance(keyCode, scanCode, modifiers));
+                    return "{\"keyPressed\":true,\"via\":\"keyboardHandler.event\"}";
                 }
             }
             return "{\"error\":\"no key input method found\"}";
@@ -1300,6 +1305,29 @@ public final class ScreenInteractionHelper {
             }
             if (kbHandler != null) {
                 long handle = WindowHelper.getWindowHandle(mc);
+                Method eventMethod = null;
+                Method fallback = null;
+                boolean ambiguous = false;
+                for (Method m : ReflectionCache.getAllMethods(kbHandler.getClass())) {
+                    if (m.isSynthetic() || m.isBridge() || java.lang.reflect.Modifier.isStatic(m.getModifiers())) continue;
+                    Class<?>[] pt = m.getParameterTypes();
+                    if (pt.length == 2 && pt[0] == long.class && !pt[1].isPrimitive()) {
+                        try { pt[1].getDeclaredConstructor(int.class, int.class); }
+                        catch (NoSuchMethodException ignored) { continue; }
+                        if (m.getName().equals("charTyped")) eventMethod = m;
+                        else if (fallback == null) fallback = m;
+                        else ambiguous = true;
+                    }
+                }
+                if (eventMethod == null && !ambiguous) eventMethod = fallback;
+                if (eventMethod != null) {
+                    java.lang.reflect.Constructor<?> constructor = eventMethod.getParameterTypes()[1]
+                            .getDeclaredConstructor(int.class, int.class);
+                    constructor.setAccessible(true);
+                    eventMethod.setAccessible(true);
+                    eventMethod.invoke(kbHandler, handle, constructor.newInstance((int) ch, modifiers));
+                    return "{\"charTyped\":true,\"via\":\"kb.event\"}";
+                }
                 for (Method m : kbHandler.getClass().getDeclaredMethods()) {
                     String n = m.getName();
                     if (m.getParameterCount() >= 2 && m.getParameterTypes()[0] == long.class

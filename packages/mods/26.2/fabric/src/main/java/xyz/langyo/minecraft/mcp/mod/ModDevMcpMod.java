@@ -2,6 +2,7 @@ package xyz.langyo.minecraft.mcp.mod;
 
 import xyz.langyo.minecraft.mcp.common.*;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class ModDevMcpMod implements ClientModInitializer {
     public static ModDevMcpMod INSTANCE;
@@ -11,6 +12,10 @@ public class ModDevMcpMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
+        System.setProperty("mcp.mod.version", FabricLoader.getInstance().getModContainer("mcpmod")
+                .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                .orElse("unknown"));
+        System.setProperty("mcp.mod.loader", "fabric");
         handler = new ReflectedInputHandler(ReflectedInputHandler::executeOnRenderThread);
         int port = McpConfig.getServerPort();
         httpServer = new McpHttpServer(handler, port);
