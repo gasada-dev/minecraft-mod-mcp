@@ -946,6 +946,7 @@ public final class ScreenInteractionHelper {
                                 for (Object w : (java.util.List<?>) list) {
                                     if (first) first = false; else sb.append(",");
                                     String cls = w.getClass().getSimpleName();
+                                    String label = widgetLabel(w);
                                     int x=0,y=0,w2=0,h2=0;
                                     boolean hasOnPress = false;
                                     for (Field wf : ReflectionCache.getAllFields(w.getClass())) {
@@ -961,8 +962,8 @@ public final class ScreenInteractionHelper {
                                     for (Method wm : ReflectionCache.getAllMethods(w.getClass())) {
                                         if (wm.getName().equals("onPress")) hasOnPress = true;
                                     }
-                                    sb.append(String.format("{\"i\":%d,\"c\":\"%s\",\"x\":%d,\"y\":%d,\"w\":%d,\"h\":%d,\"press\":%b}",
-                                            idx, cls, x, y, w2, h2, hasOnPress));
+                                    sb.append(String.format("{\"i\":%d,\"c\":\"%s\",\"label\":\"%s\",\"x\":%d,\"y\":%d,\"w\":%d,\"h\":%d,\"press\":%b}",
+                                            idx, cls, label.replace("\\", "\\\\").replace("\"", "\\\""), x, y, w2, h2, hasOnPress));
                                     idx++;
                                 }
                                 found = true;
@@ -976,6 +977,17 @@ public final class ScreenInteractionHelper {
             sb.append("],\"total\":" + idx + "}");
             return sb.toString();
         } catch (Exception e) { return "{\"error\":\"" + e.getMessage() + "\"}"; }
+    }
+
+    private static String widgetLabel(Object widget) {
+        try {
+            Method getMessage = widget.getClass().getMethod("getMessage");
+            Object message = getMessage.invoke(widget);
+            Method getString = message.getClass().getMethod("getString");
+            return String.valueOf(getString.invoke(message));
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     public static String clickButtonByIndex(Object mc, int index) {

@@ -844,8 +844,6 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
     kill_minecraft()
     setup_xvfb(screen="1280x720x24")
     install_mod_jar(mod_jar)
-    install_test_world(world_name, mc_dir=str(GAME_DIR))
-
     version_name = setup_mc_version(mc_ver, loader)
     if not version_name:
         _log("  E2E [setup]: FAIL - Version setup failed")
@@ -856,7 +854,7 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
 
     mc_proc = subprocess.Popen(
         ["node", launcher, "launch", version_name,
-         "--memory", "512", "--world", world_name, "--mod-jar", str(mod_jar)],
+         "--memory", "512", "--mod-jar", str(mod_jar)],
         env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, bufsize=1,
     )
@@ -886,6 +884,28 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
             except json.JSONDecodeError:
                 pass
         return resp
+
+    def click_labeled_button(label):
+        widgets = parse_response(api_call(mod_url, "enumerate_widgets", {}))
+        if not isinstance(widgets, dict):
+            raise RuntimeError(f"invalid widget list: {widgets}")
+        for widget in widgets.get("widgets", []):
+            if widget.get("label") == label and widget.get("press"):
+                return api_call(mod_url, "click_button_index", {"index": str(widget["i"])})
+        raise RuntimeError(f"button not found: {label}; screen={widgets.get('screen')}")
+
+    try:
+        api_call(mod_url, "enter_control_mode", {})
+        click_labeled_button("Singleplayer")
+        time.sleep(1)
+        click_labeled_button("Create New World")
+        time.sleep(1)
+        click_labeled_button("Create New World")
+        results["create_world"] = {"passed": True, "detail": world_name}
+        _log(f"  E2E [create_world]: PASS - {world_name}")
+    except Exception as e:
+        results["create_world"] = {"passed": False, "detail": str(e)}
+        _log(f"  E2E [create_world]: FAIL - {e}")
 
     deadline = time.time() + 90
     while time.time() < deadline:
