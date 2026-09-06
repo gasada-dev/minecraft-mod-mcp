@@ -41,6 +41,16 @@ public final class PlayerWorldHelper {
 
     private static String getPlayerName(Object player) {
         try {
+            Object profile = findMethodOrNull(player, "getGameProfile");
+            if (profile != null) {
+                Object name = findMethodOrNull(profile, "getName");
+                if (name != null && !name.toString().isEmpty()) return name.toString();
+            }
+            Object component = findMethodOrNull(player, "getName");
+            if (component != null) {
+                Object name = findMethodOrNull(component, "getString");
+                if (name != null && !name.toString().isEmpty()) return name.toString();
+            }
             for (Method m : ReflectionCache.getAllMethods(player.getClass())) {
                 if (m.getParameterCount() == 0 && m.getReturnType() == String.class) {
                     String mn = m.getName();
@@ -210,8 +220,18 @@ public final class PlayerWorldHelper {
             long worldTime = 0;
             String weather = "clear";
 
+            Object serverData = findMethodOrNull(mc, "getCurrentServer");
+            if (serverData == null) {
+                Object connection = findMethodOrNull(mc, "getConnection");
+                if (connection != null) serverData = findMethodOrNull(connection, "getServerData");
+            }
+            if (serverData != null) {
+                Object name = fieldOrNull(serverData, "name");
+                if (name == null || name.toString().isEmpty()) name = fieldOrNull(serverData, "ip");
+                if (name != null && !name.toString().isEmpty()) worldName = name.toString();
+            }
             Object server = findMethodOrNull(level, "getServer");
-            if (server != null) {
+            if (worldName.equals("unknown") && server != null) {
                 Object wd = findMethodOrNull(server, "getWorldData");
                 if (wd != null) {
                     for (Method m : ReflectionCache.getAllMethods(wd.getClass())) {
@@ -300,6 +320,7 @@ public final class PlayerWorldHelper {
     public static String getGameType(Object mc) throws Exception {
         try {
             Object gm = null;
+            try { gm = mc.getClass().getField("gameMode").get(mc); } catch (Exception ignored) {}
             try { gm = mc.getClass().getMethod("gameMode").invoke(mc); } catch (NoSuchMethodException ignored) {}
             if (gm == null) {
                 java.lang.reflect.Field discovered = ReflectionCache.getDiscoveredField("gameMode");

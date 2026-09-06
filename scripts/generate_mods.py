@@ -252,6 +252,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     compile "org.java-websocket:Java-WebSocket:1.5.4"
@@ -315,6 +316,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "net.minecraftforge:forge:{forge_ver}"
@@ -375,6 +377,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "net.minecraftforge:forge:{forge_ver}"
@@ -432,6 +435,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "net.minecraftforge:forge:{forge_ver}"
@@ -496,6 +500,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "net.minecraftforge:forge:{forge_ver}"
@@ -563,6 +568,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     implementation minecraft.dependency('net.minecraftforge:forge:{forge_ver}')
@@ -671,6 +677,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "{nf_group}:{nf_ver}"
@@ -721,6 +728,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     implementation 'org.java-websocket:Java-WebSocket:1.5.4'
@@ -835,6 +843,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "com.mojang:minecraft:{mc}"
@@ -860,6 +869,7 @@ repositories {{
 }}
 
 sourceSets.main.java.srcDir '../../../common/src/main/java'
+sourceSets.main.resources.srcDir '../../../common/src/main/resources'
 
 dependencies {{
     minecraft "com.mojang:minecraft:{mc}"
