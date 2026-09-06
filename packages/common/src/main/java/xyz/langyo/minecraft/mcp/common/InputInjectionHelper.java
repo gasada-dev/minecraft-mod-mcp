@@ -48,6 +48,25 @@ public final class InputInjectionHelper {
         } catch (Exception e) { System.err.println("[Input] sendKey: " + e.getMessage()); }
     }
 
+    public static boolean openChatForKey(int key) {
+        try {
+            Object mc = ReflectionCache.getMinecraftInstance();
+            Object gui = mc.getClass().getField("gui").get(mc);
+            if (gui.getClass().getMethod("screen").invoke(gui) != null) return false;
+            Object options = mc.getClass().getField("options").get(mc);
+            Object keyChat = options.getClass().getField("keyChat").get(options);
+            Class<?> keyEvent = Class.forName("net.minecraft.client.input.KeyEvent");
+            Object event = keyEvent.getConstructor(int.class, int.class, int.class).newInstance(key, 0, 0);
+            if (!Boolean.TRUE.equals(keyChat.getClass().getMethod("matches", keyEvent).invoke(keyChat, event))) return false;
+            Class<?> chatMethod = Class.forName("net.minecraft.client.gui.components.ChatComponent$ChatMethod");
+            Object message = chatMethod.getField("MESSAGE").get(null);
+            gui.getClass().getMethod("openChatScreen", chatMethod).invoke(gui, message);
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     private static Object getKeyboardHandler(Object mc) {
         try { return mc.getClass().getField("keyboardHandler").get(mc); } catch (Exception ignored) {}
         try { return mc.getClass().getDeclaredField("keyboardHandler").get(mc); } catch (Exception ignored) {}

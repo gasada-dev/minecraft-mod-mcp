@@ -447,6 +447,10 @@ public final class ReflectionCache {
             }
         }
         try { return mc.getClass().getMethod("screen").invoke(mc); } catch (Exception ignored) {}
+        try {
+            Object gui = mc.getClass().getField("gui").get(mc);
+            return gui.getClass().getMethod("screen").invoke(gui);
+        } catch (Exception ignored) {}
         Field discovered = discoveredFields.get("screen");
         if (discovered != null) { try { discovered.setAccessible(true); return discovered.get(mc); } catch (Exception ignored) {} }
         for (Field f : getAllFields(mc.getClass())) {

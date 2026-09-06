@@ -295,7 +295,7 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
     allArgs.push(`-Dmcp.port=${config.mcpPort}`);
   }
 
-  allArgs.push("-Dmcp.mod.version=0.3.0-wayland");
+  allArgs.push("-Dmcp.mod.version=0.3.1-wayland");
   allArgs.push(`-Dmcp.mod.loader=${config.loader ?? "forge"}`);
 
   if (targetJavaVersion >= 9) {

@@ -167,6 +167,7 @@ public class ReflectedInputHandler extends McpMessageHandler implements McpProto
                 System.err.println("[Input] Unknown key: " + key);
                 return;
             }
+            if (holdSeconds <= 0 && InputInjectionHelper.openChatForKey(c)) return;
             if (!ReflectionHelper.isLwjgl3()) {
                 try {
                     ReflectionHelper.guiKeyPress(mc(), c, 0, 1, 0);

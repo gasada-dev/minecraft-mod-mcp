@@ -438,7 +438,8 @@ public final class PlayerWorldHelper {
             Object conn = null;
             try { conn = player.getClass().getMethod("connection").invoke(player); }
             catch (NoSuchMethodException ignored) {
-                conn = fieldOrNull(player, "Connection");
+                conn = fieldOrNull(player, "connection");
+                if (conn == null) conn = fieldOrNull(player, "Connection");
                 if (conn == null) conn = fieldOrNull(player, "field_71174_a");
             }
             if (conn != null) {

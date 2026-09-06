@@ -29,7 +29,6 @@ public final class ControlModeHelper {
     private static Field accumulatedDXField = null;
     private static Field accumulatedDYField = null;
     private static boolean mouseFieldsInit = false;
-    private static boolean hadScreenOnEnter = false;
 
     private ControlModeHelper() {}
 
@@ -58,16 +57,36 @@ public final class ControlModeHelper {
         try {
             mcpControlMode = true;
             mcpControlModeEnterTime = System.currentTimeMillis();
-            try {
-                Object s = ReflectionCache.getCurrentScreen(mc);
-                hadScreenOnEnter = (s != null);
-            } catch (Exception ignored) {}
+            // Control mode owns game input, so dismiss menus that would consume injected keys.
+            closeCurrentScreen(mc);
             mouseReleaseActive = false;
             forceCursorAndReleaseMouse(mc);
             logModEvent("enter_control_mode", "MCP took control");
             ReflectionHelper.dbg("enterMcpControlMode: cursor forced to NORMAL, no hook");
             return JsonHelper.builder().put("control_mode", true).put("platform", "internal").put("hook", false).build();
         } catch (Exception e) { return JsonHelper.error(e.getMessage()); }
+    }
+
+    private static void closeCurrentScreen(Object mc) {
+        try {
+            Object gui = mc.getClass().getField("gui").get(mc);
+            for (Method m : ReflectionCache.getAllMethods(gui.getClass())) {
+                if (m.getName().equals("setScreen") && m.getParameterCount() == 1) {
+                    m.setAccessible(true);
+                    m.invoke(gui, (Object) null);
+                    return;
+                }
+            }
+        } catch (Exception ignored) {}
+        try {
+            for (Method m : ReflectionCache.getAllMethods(mc.getClass())) {
+                if ((m.getName().equals("setScreen") || m.getName().equals("displayGuiScreen")) && m.getParameterCount() == 1) {
+                    m.setAccessible(true);
+                    m.invoke(mc, (Object) null);
+                    return;
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     public static String exitMcpControlMode(Object mc) {
