@@ -2,19 +2,16 @@
 
 Enforces the format documented in AGENTS.md section 2 and CONTRIBUTING.md:
 
-    <gitmoji> <Capitalized English one-sentence summary ending with a period.>
+    <Capitalized English one-sentence summary ending with a period.>
 
 Rules:
-  1. Subject starts with a whitelisted gitmoji, then exactly one space.
-  2. Summary is printable ASCII (no CJK), first character capitalized.
-  3. Summary ends with exactly one '.'.
-  4. No conventional-commit prefixes (``feat:``, ``fix(scope):``, ...) and no
-     ``Topic phrase:`` colon-prefix shape -- write one plain sentence instead.
-  5. ``Revert "..."`` subjects produced by ``git revert`` are exempt.
-  6. Squash-merge suffix `` (#123)`` is allowed.
+  1. Subject is printable ASCII (no CJK), first character capitalized.
+  2. Subject ends with exactly one '.'.
+  3. ``Revert "..."`` subjects produced by ``git revert`` are exempt.
+  4. Squash-merge suffix `` (#123)`` is allowed.
 
 Usage:
-  python scripts/commit_lint.py --subject "✨ Add a new tool."
+  python scripts/commit_lint.py --subject "Add a new tool."
   python scripts/commit_lint.py --range origin/master..HEAD
   python scripts/commit_lint.py --range A..B --check-merges
 """
@@ -24,51 +21,23 @@ import re
 import subprocess
 import sys
 
-# gitmoji.dev canonical set (variation selectors stripped) plus the Celestia
-# org additions: 🔗 symlink, 🔄 sync/refresh, 📜 license, 🛡 shield.
-GITMOJIS = frozenset(
-    """
-    🎨 ⚡ 🔥 🐛 🚑 ✨ 📝 🚀 💄 🎉 ✅ 🔒 👮 🔖 🚨 💚 📱 ⬇ ⬆ 🩹 👷 📈 ♻ ➕ ➖
-    🔧 🔨 🌐 ✏ 💩 ⏪ 🔀 📦 👽 🚚 📄 💥 🍱 ♿ 💡 🍸 💬 🗃 🔊 🔇 👥 🚸 🏗 🧐
-    🧪 👔 🩺 🧱 🧑‍💻 💸 🧵 🦺 🥅 💫 ⚰ 🔍 🏷 🌱
-    🔗 🔄 📜 🛡
-    """.split()
-)
-
 SQUASH_SUFFIX = re.compile(r" \(\#\d+\)$")
-CONVENTIONAL_PREFIX = re.compile(
-    r"^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert|hack|wip|hotfix)"
-    r"(\([^)]*\))?!?:\s"
-)
-COLON_PREFIX = re.compile(r"^[A-Za-z][\w'\-]*(\s+[\w'\-]+){0,4}:(?!//)")
 
 MAX_SUBJECT_LEN = 100
 
 
-def normalize(text):
-    return text.replace("\ufe0f", "").strip()
-
-
 def check_subject(raw):
     """Return None if the subject complies, otherwise a human-readable reason."""
-    subject = normalize(raw)
+    subject = raw.strip()
 
     if subject.startswith('Revert "'):
         return None
 
-    matched = None
-    for emoji in sorted(GITMOJIS, key=len, reverse=True):
-        if subject.startswith(emoji):
-            matched = emoji
-            break
-    if matched is None:
-        return "must start with a whitelisted gitmoji (gitmoji.dev set, see AGENTS.md \u00a72)"
-
-    summary = subject[len(matched):]
-    if not summary.startswith(" ") or summary.startswith("  "):
-        return "exactly one space required between gitmoji and summary"
-
-    summary = summary.strip()
+    summary = subject
+    if summary and not summary[0].isascii():
+        _, separator, summary = summary.partition(" ")
+        if not separator:
+            return "empty summary"
     summary = SQUASH_SUFFIX.sub("", summary)
     if not summary:
         return "empty summary"
@@ -84,12 +53,6 @@ def check_subject(raw):
 
     if not summary.endswith(".") or summary.endswith(".."):
         return "summary must end with exactly one '.'"
-
-    if CONVENTIONAL_PREFIX.match(summary):
-        return "conventional-commit prefix is forbidden; write one plain sentence"
-
-    if COLON_PREFIX.match(summary):
-        return "colon-prefix shape ('Topic phrase: details') is forbidden; write the whole change as one sentence"
 
     return None
 
@@ -148,7 +111,7 @@ def main():
             print("FAIL %s %s" % (sha, subject))
             print("     -> %s" % reason)
         print(
-            "\n%d violation(s). Format: <gitmoji> <Capitalized English one-sentence "
+            "\n%d violation(s). Format: <Capitalized English one-sentence "
             "summary ending with a period.>  See AGENTS.md \u00a72." % len(failures)
         )
         return 1

@@ -3,13 +3,10 @@ name: Commit & PR Lint
 # Enforces the commit/PR-title format documented in AGENTS.md §2 and
 # CONTRIBUTING.md ("Commit Conventions"):
 #
-#     <gitmoji> <Capitalized English one-sentence summary ending with a period.>
+#     <Capitalized English one-sentence summary ending with a period.>
 #
-# - pull_request: validates the PR title — with squash merge it becomes the
-#   permanent master commit subject.
+# - pull_request: validates the PR title.
 # - push (master): validates every new commit, merge-commit subjects included.
-#   master is squash-merge only, so a merge commit landing here means someone
-#   bypassed the PR flow — the linter rejects `Merge branch ...` subjects.
 # `Revert "..."` subjects are exempt; squash suffix ` (#N)` is allowed.
 
 on:

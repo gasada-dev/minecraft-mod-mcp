@@ -1,5 +1,5 @@
-<!-- PR title format (CI-enforced): <gitmoji> <Capitalized English one-sentence summary.>
-     e.g. "✨ Add support for custom ports." — see AGENTS.md §2 / CONTRIBUTING.md -->
+<!-- PR title format (CI-enforced): <Capitalized English one-sentence summary.>
+     e.g. "Add support for custom ports." — see AGENTS.md §2 / CONTRIBUTING.md -->
 
 ## Summary
 <!-- Briefly describe what this PR does -->
@@ -12,4 +12,4 @@
 - [ ] Build passes (`just full`)
 - [ ] Smoke test passes on at least one version (`just smoke <version>`)
 - [ ] Manual testing (describe below)
-- [ ] PR title follows `<gitmoji> <Sentence.>` (squash-merged as-is)
+- [ ] PR title follows `<Sentence.>`

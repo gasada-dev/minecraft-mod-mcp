@@ -7,86 +7,56 @@
 > conflict with this repo's own conventions ([CONTRIBUTING.md](CONTRIBUTING.md)),
 > **this repo's conventions win**; every deliberate deviation is listed in §9.
 >
-> **Headline change (2026-09-03, maintainer directive): all changes now land
-> through pull requests into `master` — including agent-made changes. The old
-> `dev` integration branch is retired; do not push directly to `master`.**
+> **Headline change (2026-09-06, maintainer directive): direct commits and
+> pushes to `master` are allowed. Pull requests and feature branches are
+> optional. The old `dev` integration branch remains retired.**
 
 ---
 
 ## 1. Branch model
 
-- `master` — the only long-lived branch. **Protected since 2026-09-03**: PRs
-  are required (0 approvals — self-merge is fine), the `lint` check is
-  required, force-pushes/deletions are blocked for everyone including the
-  maintainer, and the repo only offers squash merge. Every `master` commit is
-  therefore one reviewed, gitmoji-formatted change — same model as the
-  Celestia workspace (their §5).
+- `master` — the only long-lived branch. Direct commits and pushes are allowed;
+  commit subjects must pass the `lint` check. Force-pushes and deletions remain
+  blocked for everyone including the maintainer.
 - `dev` — **retired on 2026-09-03** (branch deleted). Before deletion,
   `master` was fast-forwarded to the final `dev` tip, so no history was lost.
   Do not recreate `dev`; old `dev`-based local branches should be rebased onto
   `master`.
-- Feature branches: `feat/<name>`, `fix/<name>`, `chore/<name>`,
-  `refactor/<name>`, branched off `origin/master`.
+- Feature branches (`feat/<name>`, `fix/<name>`, `chore/<name>`,
+  `refactor/<name>`) are optional and branch from `master`.
 
-## 2. Commit message & PR title format (CI-enforced)
+## 2. Commit message format (CI-enforced)
 
 ```
-<gitmoji> <Capitalized English one-sentence summary ending with a period.>
+<Capitalized English one-sentence summary ending with a period.>
 ```
 
-- The gitmoji must come from the [gitmoji.dev](https://gitmoji.dev) canonical
-  set, plus the Celestia org additions 🔗 (symlink) 🔄 (sync/refresh)
-  📜 (license) 🛡️ (shield). Commonly used here: ✨ 🐛 🔧 ♻️ 🔥 📝 📦 ⬆️ 👷 ✅ 🚀.
-- The summary is **one plain English sentence**: capitalized first letter,
-  ends with exactly one `.`, printable ASCII only (no CJK).
-- **No colon-prefix shapes** — not `feat:`/`fix(scope):` conventional commits
-  and not `Topic phrase: details` either (e.g. `🔧 Fix compliance: nonce
-  handshake` is forbidden; `🔧 Fix nonce handshake and embed path.` is
-  correct). The gitmoji already conveys the change type. Detailed context
-  belongs in the commit BODY (blank line + bullets), never in the subject.
-- **PR titles follow the exact same rule** — with squash merge, the PR title
-  *becomes* the permanent `master` commit subject, so it is the single most
-  important line you will write.
+- One plain English sentence: capitalized first letter, ends with exactly one
+  `.`, printable ASCII only (no CJK).
+- PR titles should follow the same rule when a PR is used.
 - `Revert "..."` subjects produced by `git revert` are exempt.
 - Squash-merge suffix ` (#123)` is allowed.
-- **Exception (repo convention):** development commits on feature branches may
-  use conventional-commit prefixes for internal clarity — they are squashed
-  away at merge time anyway. Gitmoji format is still preferred everywhere.
 - Local check before pushing: `just lint-commits` (validates
   `origin/master..HEAD`). CI runs the same linter (`scripts/commit_lint.py`)
-  on every PR title and on every new commit pushed to `master` — including
-  merge-commit subjects, which are rejected: master is squash-merge only.
+  on every new commit pushed to `master` and on PR titles when a PR is used.
 
-## 3. PR workflow (per task)
+## 3. Push workflow
 
-1. **Create a feature branch** off `origin/master`. If multiple agents share
-   one checkout, work in an isolated `git worktree` (never edit the main
-   checkout concurrently with another agent); remove the worktree after merge.
-2. **3-round verify cycle** for each change: analyze → improve → verify, three
-   rounds over; if any round fails, restart the count from zero. Use subagents
-   for verification to keep the main context clean.
-3. **Non-trivial tasks must go through subagents** (or equivalent isolation):
-   give them exact file paths, the conventions above, and verification
-   criteria; launch independent sub-tasks in parallel.
-4. **Verify locally before pushing**: `just full` for build changes (or at
+1. **Verify locally before pushing**: `just full` for build changes (or at
    minimum the touched package: `just mcp-build`, `just mcp-lint`, relevant
    `just build-mod`), `just lint-commits` always. Run `just smoke <version>`
    when behavior can only be proven in-game.
-5. **Push** the branch, **open a PR against `master`** (via `gh pr create`)
-   with a compliant title and a filled-in PR template.
-6. **Merge** once required checks are green: **squash merge**, subject = PR
-   title, then **delete the branch**.
-7. **PR economy**: bundle one coherent feature/fix wave per PR; do not open a
-   separate PR per trivial tweak. Small PRs are fine for urgent hotfixes or
-   when nothing else is pending.
-8. **Version bumps belong in the main PR**: bump
-   `packages/minecraft-mod-mcp/package.json` inside the feature/fix PR that
+   Maintainer scope is MC 26.2 Fabric and Forge only: use `just build-mod 26.2
+   fabric` or `just build-mod 26.2 forge` (or direct Gradle here); do not build
+   the full matrix locally. `generate_mods.py` only generates on demand; keep
+   other mod packages.
+2. **Commit and push** directly to `master` by default.
+3. For larger or collaborative changes, optionally use a feature branch and PR
+   against `master` with a compliant title.
+4. **Version bumps belong with the feature/fix**: bump
+   `packages/minecraft-mod-mcp/package.json` inside the feature/fix that
    warrants a release; never open standalone version-bump PRs. Releases are
    then tag-driven (`git tag vX.Y.Z && git push --tags`).
-9. Merging may be done autonomously by an agent once required checks pass and
-   the title/body comply. Never merge over a genuine code-level failure;
-   infra/environmental check failures may be waived only when documented in
-   the PR and local verification passed.
 
 ## 4. Git push discipline
 
@@ -97,8 +67,7 @@
   Never fall back to `--force`: fetch, inspect with
   `git log origin/<branch>..HEAD` and `git log HEAD..origin/<branch>`, and ask
   the maintainer if anything is unaccounted for.
-- Force-pushes of any kind to `master` are forbidden; it only advances
-  forward via squash merge.
+- Force-pushes of any kind to `master` are forbidden.
 - This applies to all agents, subagents, and interactive sessions.
 
 ## 5. Sensitive information red line (hard rule)
@@ -134,24 +103,22 @@
 - Every workflow already sets `concurrency` + `cancel-in-progress`, so stale
   runs are cancelled automatically; do not add workflows without a
   `concurrency` group.
-- **What runs where**: on PRs to `master` — the build matrix (`ci.yml`) plus
-  the fast commit/PR-title lint (`commit-lint.yml`). On `push` to `master` —
-  the full pipeline including smoke/screenshot/E2E tests, plus the
-  push-format guard.
+- **What runs where**: pushes to `master` run the full pipeline including
+  smoke/screenshot/E2E tests and the push-format guard. PRs, when used, run
+  the build matrix (`ci.yml`) and fast commit/PR-title lint (`commit-lint.yml`).
 - **CI is a gate for code failures, not a tea ceremony**: for docs/config-only
-  changes you may merge once the lint check is green and the relevant code
-  checks pass, without waiting out the full Windows build matrix — record the
-  waiver in the PR. Never merge over a real compile/test failure; if checks
-  are merely queued, wait or re-run instead of force-merging.
+  changes you may push once the lint check is green and relevant code checks
+  pass, without waiting out the full Windows build matrix. Never push over a
+  real compile/test failure; if checks are merely queued, wait or re-run.
 - Do not sit and watch CI. If a run is stuck queued for an unusually long
   time, investigate (`gh run list`, `gh run cancel <id>`) instead of stacking
   more pushes on top.
 
 ## 7. CHANGELOG policy
 
-- **Never create a CHANGELOG / revision-history file in this repo.** The
-  merged PRs are the changelog: the squash subject + PR description form the
-  complete history, and `git log` serves any granularity.
+- **Never create a CHANGELOG / revision-history file in this repo.** Git
+  history is the changelog; commit subjects and PR descriptions provide detail,
+  and `git log` serves any granularity.
 - Release notes live on the git tag / GitHub Releases page (written per
   release, never per commit) — the `release.yml` workflow already does this.
 
@@ -160,7 +127,7 @@
 ```bash
 just lint-commits                     # validate origin/master..HEAD
 just lint-commits v0.2.0..master      # validate any range
-python scripts/commit_lint.py --subject "✨ Add a new tool."   # one subject
+python scripts/commit_lint.py --subject "Add a new tool."     # one subject
 ```
 
 ## 9. Deliberately NOT adopted from the Celestia workspace rules
@@ -175,5 +142,18 @@ python scripts/commit_lint.py --subject "✨ Add a new tool."   # one subject
 | §8 node-2/3 deployment & malkuth supervision | No deployment fleet; releases are tag-driven GitHub Releases. |
 | §9 pnpm registry / sibling links / worktree symlink discipline | NFS multi-agent infra that does not exist here. |
 
-> The Celestia §5 model (master-only, squash-merge only, `dev` deprecated) is
-> **adopted** here as of 2026-09-03 — see §1.
+> The Celestia §5 PR-only and squash-merge model is **not adopted** here;
+> `dev` remains retired — see §1.
+
+## 10. Local test instances (Prism)
+
+- Use these for live MCP testing against clients; they complement, not replace,
+  `just smoke`. Both use the local Folia server at `127.0.0.1:25565` (log:
+  `/home/gasada/ai/vanillabox/vnbx-dev/server/logs/latest.log`) and have mod
+  build `0.3.1-wayland` (Fabric, MC 26.2) installed.
+- `test` — player `gasada`, mod HTTP endpoint `http://127.0.0.1:9876`.
+- `test2` — player `faint_sound`, mod HTTP endpoint `http://127.0.0.1:9875`.
+- Launch with `PrismLauncher-Linux-x86_64.AppImage --appimage-extract-and-run --launch test`
+  (replace `test` with `test2`). Prism is single-instance: a second invocation
+  forwards to its running process; see `docs/guides/en/WAYLAND.md`.
+- Verify readiness: `curl -s http://127.0.0.1:9876/api/status`.
