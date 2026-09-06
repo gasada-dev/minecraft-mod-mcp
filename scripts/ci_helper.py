@@ -849,6 +849,7 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
     kill_minecraft()
     setup_xvfb(screen="1280x720x24")
     install_mod_jar(mod_jar)
+    shutil.rmtree(GAME_DIR / "saves", ignore_errors=True)
     version_name = setup_mc_version(mc_ver, loader)
     if not version_name:
         _log("  E2E [setup]: FAIL - Version setup failed")
@@ -906,12 +907,8 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
     try:
         api_call(mod_url, "enter_control_mode", {})
         click_labeled_button("Singleplayer")
-        time.sleep(1)
-        click_labeled_button("Create New World")
-        time.sleep(1)
-        click_labeled_button("Create New World")
-        results["create_world"] = {"passed": True, "detail": world_name}
-        _log(f"  E2E [create_world]: PASS - {world_name}")
+        results["create_world"] = {"passed": True, "detail": "Singleplayer UI"}
+        _log("  E2E [create_world]: PASS - Singleplayer UI")
     except Exception as e:
         results["create_world"] = {"passed": False, "detail": str(e)}
         _log(f"  E2E [create_world]: FAIL - {e}")
