@@ -176,7 +176,7 @@ def write_forge_build_fg12(mc, info, path):
 
 apply plugin: "forge"
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 archivesBaseName = "minecraft-moddev-mcp-mod"
 
@@ -232,7 +232,7 @@ def write_forge_build_fg2(mc, info, path):
 
 apply plugin: "net.minecraftforge.gradle.forge"
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 archivesBaseName = "minecraft-moddev-mcp-mod"
 
@@ -293,7 +293,7 @@ def write_forge_build_fg3(mc, info, path):
 
 apply plugin: "net.minecraftforge.gradle"
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 archivesBaseName = "minecraft-moddev-mcp-mod"
 
@@ -354,7 +354,7 @@ def write_forge_build_fg41(mc, info, path):
 
 apply plugin: "net.minecraftforge.gradle"
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 archivesBaseName = "minecraft-moddev-mcp-mod"
 
@@ -411,7 +411,7 @@ def write_forge_build_fg51(mc, info, path):
 
 apply plugin: "net.minecraftforge.gradle"
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 archivesBaseName = "minecraft-moddev-mcp-mod"
 
@@ -473,7 +473,7 @@ def write_forge_build_fg6(mc, info, path):
     id 'net.minecraftforge.gradle' version '{fg}'
 }}
 
-version = '0.1.1-SNAPSHOT'
+version = '0.3.1-wayland.1'
 group = 'xyz.langyo'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of({java})
@@ -540,7 +540,7 @@ def write_forge_build_fg7(mc, info, path):
     id 'net.minecraftforge.gradle' version '{fg}'
 }}
 
-version = '0.1.1-SNAPSHOT'
+version = '0.3.1-wayland.1'
 group = 'xyz.langyo'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of({java})
@@ -647,7 +647,7 @@ def write_neoforge_build_fg6(mc, info, path):
     id 'net.minecraftforge.gradle' version '{fg}'
 }}
 
-version = '0.1.1-SNAPSHOT'
+version = '0.3.1-wayland.1'
 group = 'xyz.langyo'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of({java})
@@ -714,7 +714,7 @@ def write_neoforge_build(mc, info, path):
     id 'net.neoforged.moddev' version '{mdg}'
 }}
 
-version = '0.1.1-SNAPSHOT'
+version = '0.3.1-wayland.1'
 group = 'xyz.langyo'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of({java})
@@ -819,7 +819,7 @@ def write_fabric_build(mc, info, path):
 }}"""
     else:
         java_block = f"""sourceCompatibility = "{java_str}"
-targetCompatibility = "{java_str}" """
+targetCompatibility = "{java_str}"""
 
     if unobfuscated:
         # MC 26.x ships unobfuscated (intermediary pinned at 0.0.0): no
@@ -830,7 +830,7 @@ targetCompatibility = "{java_str}" """
     id "net.fabricmc.fabric-loom" version "{loom_ver}"
 }}
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 
 {java_block}
@@ -856,7 +856,7 @@ dependencies {{
     id "fabric-loom" version "{loom_ver}"
 }}
 
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 
 {java_block}
@@ -907,32 +907,21 @@ def write_fabric_mod_json(mc, info, path):
     content = """{
   "schemaVersion": 1,
   "id": "mcpmod",
-  "version": "0.1.1",
+  "version": "0.3.1-wayland.1",
   "name": {
     "en_us": "ModDev MCP",
-    "zh_cn": "ModDev MCP",
-    "zh_tw": "ModDev MCP",
-    "ja_jp": "ModDev MCP",
-    "ko_kr": "ModDev MCP",
-    "fr_fr": "ModDev MCP",
-    "es_es": "ModDev MCP",
     "ru_ru": "ModDev MCP"
   },
   "description": {
     "en_us": "WebSocket bridge for AI agent interaction",
-    "zh_cn": "\\u7528\\u4e8e AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6865\\u63a5\\u6a21\\u7ec4",
-    "zh_tw": "\\u7528\\u65bc AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6a4b\\u63a5\\u6a21\\u7d44",
-    "ja_jp": "AI\\u30a8\\u30fc\\u30b8\\u30a7\\u30f3\\u30c8\\u9023\\u643a\\u306e\\u305f\\u3081\\u306eMinecraft WebSocket\\u30d6\\u30ea\\u30c3\\u30b8MOD",
-    "ko_kr": "AI \\uc5d0\\uc774\\uc804\\ud2b8 \\uc0c1\\ud638\\uc791\\uc6a9\\uc744 \\uc704\\ud55c Minecraft WebSocket \\ube0c\\ub9ac\\uc9c0 \\ubaa8\\ub4dc",
-    "fr_fr": "Pont WebSocket pour l'interaction d'agents IA avec Minecraft",
-    "es_es": "Puente WebSocket para la interacci\\u00f3n de agentes IA en Minecraft",
     "ru_ru": "WebSocket-\\u043c\\u043e\\u0441\\u0442 \\u0434\\u043b\\u044f \\u0432\\u0437\\u0430\\u0438\\u043c\\u043e\\u0434\\u0435\\u0439\\u0441\\u0442\\u0432\\u0438\\u044f AI-\\u0430\\u0433\\u0435\\u043d\\u0442\\u043e\\u0432 \\u0441 Minecraft"
   },
   "authors": ["langyo"],
   "environment": "client",
   "entrypoints": {
     "client": ["xyz.langyo.minecraft.mcp.mod.ModDevMcpMod"]
-  }
+  },
+  "mixins": ["mcpmod.mixins.json"]
 }
 """
     os.makedirs(os.path.join(path, "src", "main", "resources"), exist_ok=True)

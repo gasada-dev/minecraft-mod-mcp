@@ -261,7 +261,6 @@ jobs:
       - name: Collect JARs
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
           $outDir = "release-jars"
           New-Item -ItemType Directory -Path $outDir -Force
 
@@ -278,7 +277,7 @@ jobs:
             if (Test-Path $jarDir) {
               Get-ChildItem $jarDir -Filter "*.jar" | ForEach-Object {
                 if ($_.Name -notmatch "-sources|-dev|-slim") {
-                  $newName = "minecraft-mcp-$mc-$loader-$tag.jar"
+                  $newName = "minecraft-mcp-$mc-$loader.jar"
                   Copy-Item $_.FullName "$outDir/$newName"
                   Write-Host "  Collected: $newName ($('{0:N1}' -f ($_.Length / 1KB)) KB)"
                 }
@@ -305,6 +304,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/download-artifact@v4
         with:
@@ -331,13 +332,13 @@ jobs:
         shell: bash
         run: |
           # Generate a chronological commit log of master squash commits
-          # since the last STABLE release tag (skip rc/beta/pre tags).
+          # since the last stable release tag (skip prerelease tags).
           CURRENT="${GITHUB_REF_NAME#v}"
-          # Find the latest stable tag (exclude rc/beta/alpha/pre/snapshot)
-          PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot)' | head -1)
+          # Find the latest stable tag (exclude prerelease tags).
+          PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot|wayland)([.0-9]*)$' | head -1 || true)
           # If the current tag IS the latest stable, find the one before it
           if [ "v${CURRENT}" = "$PREV_TAG" ] || [ "$CURRENT" = "${PREV_TAG#v}" ]; then
-            PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot)' | head -2 | tail -1)
+            PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot|wayland)([.0-9]*)$' | head -2 | tail -1 || true)
           fi
           if [ -n "$PREV_TAG" ]; then
             RANGE="${PREV_TAG}..origin/master"
@@ -366,7 +367,7 @@ jobs:
         shell: bash
         run: |
           TAG="${GITHUB_REF_NAME:-}"
-          if [[ "$TAG" =~ -(rc|beta|alpha|pre|snapshot)[0-9]*$ ]]; then
+          if [[ "$TAG" =~ -(rc|beta|alpha|pre|snapshot)[0-9]*$ || "$TAG" =~ -wayland(\.[0-9]+)*$ ]]; then
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"

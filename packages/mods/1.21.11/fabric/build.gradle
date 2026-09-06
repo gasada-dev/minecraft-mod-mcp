@@ -2,7 +2,7 @@ plugins {
     id "fabric-loom" version "1.14-SNAPSHOT"
 }
 
-version = "0.2.1"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 
 java {
@@ -26,10 +26,4 @@ dependencies {
     mappings "net.fabricmc:yarn:1.21.11+build.6:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.0"
     implementation "org.java-websocket:Java-WebSocket:1.5.4"
-}
-
-loom {
-    mixin {
-        defaultRefmapName = "mcpmod.refmap.json"
-    }
 }

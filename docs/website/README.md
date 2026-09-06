@@ -6,7 +6,7 @@ Tech stack mirrors [`celestia-island.github.io`](https://celestia-island.github.
 
 - **Vue 3** + **Vite 6** (SPA, hash router)
 - **UnoCSS** (Wind + Icons + Typography presets, `@iconify-json/lucide`)
-- **Pinia** · **Vue Router** · **Vue I18n** (8 locales)
+- **Pinia** · **Vue Router** · **Vue I18n** (English and Russian)
 - **Three.js** shader background + starfield
 - **Sass** + **marked** for the About page
 - **TypeScript** with `vue-tsc` type-checking
@@ -24,9 +24,9 @@ docs/website/
 ├─ scripts/build.py      # full build (or favicon/asset pass with --skip-*)
 ├─ shaders/              # GLSL for the Three.js background
 ├─ res/
-│  ├─ i18n/*.json        # en, zh-CN, zh-TW, ja, ko, es, fr, ru
+│  ├─ i18n/*.json        # en, ru
 │  └─ logos/             # minecraft-mod-mcp.webp (favicon source)
-├─ docs/**/about.md      # per-locale About copy, rendered by marked
+├─ docs/{en,ru}/about.md # localized About copy, rendered by marked
 └─ src/
    ├─ main.ts · App.vue
    ├─ assets/styles/global.scss

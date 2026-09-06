@@ -1,6 +1,6 @@
 # Руководство по интеграции с AI-инструментами
 
-**[English](../en/AI-TOOLS.md)** &bull; **[简体中文](../zhs/AI-TOOLS.md)** &bull; **[繁體中文](../zht/AI-TOOLS.md)** &bull; **[日本語](../ja/AI-TOOLS.md)** &bull; **[한국어](../ko/AI-TOOLS.md)** &bull; **[Français](../fr/AI-TOOLS.md)** &bull; **[Español](../es/AI-TOOLS.md)** &bull; **Русский**
+**[English](../en/AI-TOOLS.md)** &bull; **Русский**
 
 > **🤖 Для ИИ-агентов**: Если пользователь просит вас подключиться к Minecraft, добавьте эту конфигурацию MCP-сервера и используйте более 35 инструментов, перечисленных в конце этого руководства:
 >
@@ -647,4 +647,4 @@ claude mcp add -s user zai-mcp-server --env Z_AI_API_KEY=<your_zhipu_api_key> --
 3. **Port conflict**: Если порт 9876 занят, настройте другой порт через переменную окружения `MCP_PORT` или системное свойство `mcp.server.port`.
 4. **Firewall**: Убедитесь, что ваш брандмауэр разрешает подключения к `localhost:9876`.
 
-> По вопросам и проблемам открывайте issue в [GitHub-репозитории](https://github.com/langyo/minecraft-mod-mcp).
+> По вопросам и проблемам открывайте issue в [GitHub-репозитории](https://github.com/gasada-dev/minecraft-mod-mcp).

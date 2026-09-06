@@ -579,8 +579,8 @@ def main():
     # ================================================================
     print("\n[Phase 12] Shared dependencies")
     shared = [
-        ("xyz.langyo.minecraft.mcp", "mcp-common", "0.1.1-SNAPSHOT",
-         "mcp-common-0.1.1-SNAPSHOT.jar", "maven-local"),
+        ("xyz.langyo.minecraft.mcp", "mcp-common", "0.3.1-wayland.1",
+         "mcp-common-0.3.1-wayland.1.jar", "maven-local"),
     ]
     import urllib.request
     for mc, info in sorted(ALL_VERSIONS.items()):

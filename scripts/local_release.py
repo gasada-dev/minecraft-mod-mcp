@@ -145,7 +145,7 @@ def create_release(tag, dry_run=False):
 
     cmd = (["gh", "release", "create", tag]
            + jar_files
-           + ["--repo", "langyo/minecraft-mod-mcp",
+            + ["--repo", "gasada-dev/minecraft-mod-mcp",
               "--title", title,
               "--prerelease",
               "--notes", body])

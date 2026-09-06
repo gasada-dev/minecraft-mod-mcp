@@ -47,7 +47,7 @@ minecraft-mcp/
 │       └── src/                 # MCP server, port discovery, transport handlers
 ├── scripts/                     # Python build/test/launch scripts
 ├── docs/
-│   ├── guides/                  # User documentation (8 languages)
+│   ├── guides/                  # User documentation (English and Russian)
 │   └── research/                # Technical research per version/loader
 └── tests/                       # Test metadata and reference screenshots
 ```
@@ -74,7 +74,7 @@ cd packages/minecraft-mod-mcp && npm test
 1. Update version in `packages/minecraft-mod-mcp/package.json`
 2. Run `just full` to build all artifacts
 3. Tag and push: `git tag vX.Y.Z && git push --tags`
-4. GitHub Actions publishes the npm package and GitHub Release
+4. GitHub Actions publishes JARs to GitHub Release
 
 ## Commit Conventions
 
@@ -109,7 +109,7 @@ CI enforces the same rules on every PR title and new commit pushed to `master` (
 
 ### Reporting Bugs
 
-Use the [Bug Report](https://github.com/langyo/minecraft-mod-mcp/issues/new?template=bug_report.md) template. Include:
+Use the [Bug Report](https://github.com/gasada-dev/minecraft-mod-mcp/issues/new?template=bug_report.md) template. Include:
 
 - Minecraft version, modloader, and mod version
 - Clear steps to reproduce
@@ -118,7 +118,7 @@ Use the [Bug Report](https://github.com/langyo/minecraft-mod-mcp/issues/new?temp
 
 ### Suggesting Features
 
-Use the [Feature Request](https://github.com/langyo/minecraft-mod-mcp/issues/new?template=feature_request.md) template. Describe the problem first, then your proposed solution.
+Use the [Feature Request](https://github.com/gasada-dev/minecraft-mod-mcp/issues/new?template=feature_request.md) template. Describe the problem first, then your proposed solution.
 
 ### Pull Requests
 

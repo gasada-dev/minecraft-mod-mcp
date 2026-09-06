@@ -10,7 +10,7 @@
         </a>
 
         <div class="flex items-center gap-1.5">
-          <a href="https://github.com/langyo/minecraft-mod-mcp" target="_blank" rel="noopener" class="nav-icon-btn no-underline group" title="GitHub">
+          <a href="https://github.com/gasada-dev/minecraft-mod-mcp" target="_blank" rel="noopener" class="nav-icon-btn no-underline group" title="GitHub">
             <div class="i-lucide-github w-5 h-5 group-hover:text-[var(--text-primary)] transition-colors" />
           </a>
 
@@ -61,12 +61,6 @@ const showLangMenu = ref(false)
 
 const langs = [
   { code: 'en', label: 'English' },
-  { code: 'zh-CN', label: '简体中文' },
-  { code: 'zh-TW', label: '繁體中文' },
-  { code: 'ja', label: '日本語' },
-  { code: 'ko', label: '한국어' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
   { code: 'ru', label: 'Русский' },
 ]
 

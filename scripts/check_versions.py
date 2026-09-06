@@ -24,15 +24,8 @@ def strip_v_prefix(version: str) -> str:
 
 
 def base_version(tag: str) -> str:
-    """Strip the leading 'v' and any prerelease suffix (-rc1, -beta.2, etc.)
-    so a prerelease tag like 'v0.2.1-rc1' checks against mod version '0.2.1'.
-    The npm/GitHub workflows publish the full tag as the version, but the mod
-    sources only carry the base version."""
-    v = strip_v_prefix(tag)
-    # Split off prerelease: everything after the first '-' that isn't part of
-    # the MC version (MC versions use dots, not hyphens). The suffix may be
-    # immediately followed by a digit (rc1, beta2), so don't require a boundary.
-    return re.split(r"-(?:rc|beta|alpha|pre|snapshot)\d*", v, maxsplit=1, flags=re.IGNORECASE)[0]
+    """Strip only tag's leading ``v``; mod metadata uses full SemVer."""
+    return strip_v_prefix(tag)
 
 
 def fail(msg: str):
@@ -89,13 +82,18 @@ def check_build_gradle(expected: str) -> list[str]:
         content = path.read_text(encoding="utf-8")
         for m in re.finditer(pattern_groovy, content):
             actual = m.group(1)
-            if "-" in actual and not actual.startswith("1.0"):
-                continue
             line_start = content.rfind("\n", 0, m.start()) + 1
             line = content[line_start:m.end()]
             block_start = content.rfind("\n", 0, m.start()) + 1
-            preceding = content[max(0, block_start - 200):block_start]
-            if "neoforge {" in preceding.lower() or "neoforged" in preceding.lower():
+            dependency_start = -1
+            dependency_block = ""
+            for block_name in ("minecraft {", "neoForge {", "neoforge {"):
+                dependency_start = content.rfind(block_name, 0, m.start())
+                if dependency_start >= 0:
+                    dependency_block = content[dependency_start:m.start()]
+                    if dependency_block.count("{") > dependency_block.count("}"):
+                        break
+            if dependency_start >= 0 and dependency_block.count("{") > dependency_block.count("}"):
                 continue
             if "minecraft" in line.lower() and "version" in line.lower():
                 if "net.minecraftforge" not in line.lower():

@@ -32,7 +32,7 @@ import xyz.langyo.minecraft.mcp.common.*;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 
-@Mod(modid = "mcpmod", name = "ModDev MCP", version = "1.0")
+@Mod(modid = "mcpmod", name = "ModDev MCP", version = "0.3.1-wayland.1")
 public class ModDevMcpMod {
     public static ModDevMcpMod INSTANCE;
     private McpHttpServer httpServer;
@@ -49,6 +49,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -78,6 +79,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -109,6 +111,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -142,6 +145,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -182,6 +186,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -250,6 +255,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -285,6 +291,7 @@ public class ModDevMcpMod {
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -341,11 +348,24 @@ public class ModDevMcpMod {
 def fabric_mod(mc):
     from version_config import get_api_group
     group = get_api_group(mc)
-    
-    if group == "fg3":
+
+    import_line = "import net.minecraft.client.MinecraftClient;"
+    fabric_import = "import net.fabricmc.api.ClientModInitializer;"
+    properties = ""
+    startup = """                Thread.sleep(5000);
+                try { Object mc = MinecraftClient.getInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}"""
+    tick = """        try { Object mc = MinecraftClient.getInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}"""
+
+    if mc == "1.14.4":
         extra_methods = """
     public void onInGameHudRender(Object hud, float tickDelta) {}
     public void onScreenRender(Object screen, int mouseX, int mouseY, float tickDelta) {}
+    public boolean onMouseButtonEvent(Object mc, double mx, double my, int button) { return false; }
+"""
+    elif group == "fg3" or mc in ("1.20.6", "1.21", "1.21.1"):
+        extra_methods = """
+    public void onInGameHudRender(Object ctx, float tickDelta) {}
+    public void onScreenRender(Object ctx, Object screen, int mouseX, int mouseY, float tickDelta) {}
     public boolean onMouseButtonEvent(Object mc, double mx, double my, int button) { return false; }
 """
     elif group == "fg4" and mc < "1.16":
@@ -366,23 +386,56 @@ def fabric_mod(mc):
     public void onScreenRender(Object matrices, Object screen, int mouseX, int mouseY, float tickDelta) {}
     public boolean onMouseButtonEvent(Object mc, double mx, double my, int button) { return false; }
 """
-    elif mc >= "1.21.11":
+    else:
         extra_methods = """
     public void onInGameHudRender(Object ctx, float tickDelta) {}
     public void onScreenRender(Object ctx, Object screen, int mouseX, int mouseY, float tickDelta) {}
     public boolean onMouseClicked(double mx, double my, int button) { return false; }
 """
-    else:
-        extra_methods = """
-    public void onInGameHudRender(Object ctx, float tickDelta) {}
-    public void onScreenRender(Object ctx, Object screen, int mouseX, int mouseY, float tickDelta) {}
-    public boolean onMouseButtonEvent(Object mc, double mx, double my, int button) { return false; }
+
+    if mc in ("1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"):
+        startup = """                for (int i = 0; i < 30; i++) {
+                    Thread.sleep(2000);
+                    try {
+                        Object mc = MinecraftClient.getInstance();
+                        if (mc != null) {
+                            ReflectionHelper.setMinecraftInstance(mc);
+                            break;
+                        }
+                    } catch (Exception ignored) {}
+        }"""
+        tick = ""
+        fabric_import, import_line = import_line, fabric_import
+    elif mc == "1.21.11":
+        startup = """                // Poll-retry until MinecraftClient.getInstance() is ready,
+                // then start the HTTP server. On slow init (large modpacks,
+                // llvmpipe rendering) the instance may not be ready at 5 s.
+                for (int i = 0; i < 30; i++) {
+                    Thread.sleep(2000);
+                    try {
+                        Object mc = MinecraftClient.getInstance();
+                        if (mc != null) {
+                            ReflectionHelper.setMinecraftInstance(mc);
+                            break;
+                        }
+                    } catch (Exception ignored) {}
+                }"""
+    elif mc == "26.2":
+        import_line = "import net.fabricmc.loader.api.FabricLoader;"
+        properties = """        System.setProperty(\"mcp.mod.version\", FabricLoader.getInstance().getModContainer(\"mcpmod\")
+                .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                .orElse(\"unknown\"));
+        System.setProperty(\"mcp.mod.loader\", \"fabric\");
 """
-    
+        startup = """                Thread.sleep(5000);
+                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}"""
+        tick = """        try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}"""
+
     return """package xyz.langyo.minecraft.mcp.mod;
 
 import xyz.langyo.minecraft.mcp.common.*;
-import net.fabricmc.api.ClientModInitializer;
+""" + fabric_import + """
+""" + import_line + """
 
 public class ModDevMcpMod implements ClientModInitializer {
     public static ModDevMcpMod INSTANCE;
@@ -392,13 +445,12 @@ public class ModDevMcpMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
-        handler = new ReflectedInputHandler(ReflectedInputHandler::executeOnRenderThread);
+""" + properties + """        handler = new ReflectedInputHandler(ReflectedInputHandler::executeOnRenderThread);
         int port = McpConfig.getServerPort();
         httpServer = new McpHttpServer(handler, port);
         new Thread(() -> {
             try {
-                Thread.sleep(5000);
-                try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
+""" + startup + """
                 httpServer.start();
             } catch (Exception e) {
                 System.err.println("[MCP-MOD] HTTP server failed: " + e.getMessage());
@@ -407,8 +459,7 @@ public class ModDevMcpMod implements ClientModInitializer {
     }
 
     public void onClientTick() {
-        try { Object mc = ReflectionHelper.getMinecraftInstance(); if (mc != null) ReflectionHelper.setMinecraftInstance(mc); } catch (Exception ignored) {}
-    }
+""" + tick + ("\n" if tick else "") + """    }
 """ + extra_methods + "}\n"
 
 
@@ -420,12 +471,6 @@ PACK_MCMETA = """{
   "pack": {
     "description": {
       "en_us": "ModDev MCP resources",
-      "zh_cn": "ModDev MCP \\u8d44\\u6e90\\u5305",
-      "zh_tw": "ModDev MCP \\u8cc7\\u6e90\\u5305",
-      "ja_jp": "ModDev MCP \\u30ea\\u30bd\\u30fc\\u30b9\\u30d1\\u30c3\\u30af",
-      "ko_kr": "ModDev MCP \\ub9ac\\uc18c\\uc2a4 \\ud329",
-      "fr_fr": "Pack de ressources ModDev MCP",
-      "es_es": "Paquete de recursos ModDev MCP",
       "ru_ru": "\\u041f\\u0430\\u043a\\u0435\\u0442 \\u0440\\u0435\\u0441\\u0443\\u0440\\u0441\\u043e\\u0432 ModDev MCP"
     },
     "pack_format": 34
@@ -439,19 +484,13 @@ license="MIT"
 
 [[mods]]
 modId="mcpmod"
-version="0.1.1"
+version="0.3.1-wayland.1"
 displayName="ModDev MCP"
 description="WebSocket bridge for AI agent interaction"
 authors="langyo"
 
 [mods.description_localized]
 en_us = "WebSocket bridge for AI agent interaction"
-zh_cn = "\\u7528\\u4e8e AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6865\\u63a5\\u6a21\\u7ec4"
-zh_tw = "\\u7528\\u65bc AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6a4b\\u63a5\\u6a21\\u7d44"
-ja_jp = "AI\\u30a8\\u30fc\\u30b8\\u30a7\\u30f3\\u30c8\\u9023\\u643a\\u306e\\u305f\\u3081\\u306eMinecraft WebSocket\\u30d6\\u30ea\\u30c3\\u30b8MOD"
-ko_kr = "AI \\uc5d0\\uc774\\uc804\\ud2b8 \\uc0c1\\ud638\\uc791\\uc6a9\\uc744 \\uc704\\ud55c Minecraft WebSocket \\ube0c\\ub9ac\\uc9c0 \\ubaa8\\ub4dc"
-fr_fr = "Pont WebSocket pour l'interaction d'agents IA avec Minecraft"
-es_es = "Puente WebSocket para la interacci\\u00f3n de agentes IA en Minecraft"
 ru_ru = "WebSocket-\\u043c\\u043e\\u0441\\u0442 \\u0434\\u043b\\u044f \\u0432\\u0437\\u0430\\u0438\\u043c\\u043e\\u0434\\u0435\\u0439\\u0441\\u0442\\u0432\\u0438\\u044f AI-\\u0430\\u0433\\u0435\\u043d\\u0442\\u043e\\u0432 \\u0441 Minecraft"
 """
 
@@ -462,15 +501,9 @@ MCMOD_INFO = """[
     "description": "WebSocket bridge for AI agent interaction",
     "description_localized": {
       "en_us": "WebSocket bridge for AI agent interaction",
-      "zh_cn": "\\u7528\\u4e8e AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6865\\u63a5\\u6a21\\u7ec4",
-      "zh_tw": "\\u7528\\u65bc AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6a4b\\u63a5\\u6a21\\u7d44",
-      "ja_jp": "AI\\u30a8\\u30fc\\u30b8\\u30a7\\u30f3\\u30c8\\u9023\\u643a\\u306e\\u305f\\u3081\\u306eMinecraft WebSocket\\u30d6\\u30ea\\u30c3\\u30b8MOD",
-      "ko_kr": "AI \\uc5d0\\uc774\\uc804\\ud2b8 \\uc0c1\\ud638\\uc791\\uc6a9\\uc744 \\uc704\\ud55c Minecraft WebSocket \\ube0c\\ub9ac\\uc9c0 \\ubaa8\\ub4dc",
-      "fr_fr": "Pont WebSocket pour l'interaction d'agents IA avec Minecraft",
-      "es_es": "Puente WebSocket para la interacci\\u00f3n de agentes IA en Minecraft",
       "ru_ru": "WebSocket-\\u043c\\u043e\\u0441\\u0442 \\u0434\\u043b\\u044f \\u0432\\u0437\\u0430\\u0438\\u043c\\u043e\\u0434\\u0435\\u0439\\u0441\\u0442\\u0432\\u0438\\u044f AI-\\u0430\\u0433\\u0435\\u043d\\u0442\\u043e\\u0432 \\u0441 Minecraft"
     },
-    "version": "0.1.1",
+    "version": "0.3.1-wayland.1",
     "authorList": ["langyo"],
     "credits": ""
   }
@@ -483,19 +516,13 @@ license = "MIT"
 
 [[mods]]
 modId = "mcpmod"
-version="0.1.1"
+version="0.3.1-wayland.1"
 displayName = "ModDev MCP"
 description = "WebSocket bridge for AI agent interaction"
 authors = "langyo"
 
 [mods.description_localized]
 en_us = "WebSocket bridge for AI agent interaction"
-zh_cn = "\\u7528\\u4e8e AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6865\\u63a5\\u6a21\\u7ec4"
-zh_tw = "\\u7528\\u65bc AI \\u4ee3\\u7406\\u4ea4\\u4e92\\u7684 Minecraft WebSocket \\u6a4b\\u63a5\\u6a21\\u7d44"
-ja_jp = "AI\\u30a8\\u30fc\\u30b8\\u30a7\\u30f3\\u30c8\\u9023\\u643a\\u306e\\u305f\\u3081\\u306eMinecraft WebSocket\\u30d6\\u30ea\\u30c3\\u30b8MOD"
-ko_kr = "AI \\uc5d0\\uc774\\uc804\\ud2b8 \\uc0c1\\ud638\\uc791\\uc6a9\\uc744 \\uc704\\ud55c Minecraft WebSocket \\ube0c\\ub9ac\\uc9c0 \\ubaa8\\ub4dc"
-fr_fr = "Pont WebSocket pour l'interaction d'agents IA avec Minecraft"
-es_es = "Puente WebSocket para la interacci\\u00f3n de agentes IA en Minecraft"
 ru_ru = "WebSocket-\\u043c\\u043e\\u0441\\u0442 \\u0434\\u043b\\u044f \\u0432\\u0437\\u0430\\u0438\\u043c\\u043e\\u0434\\u0435\\u0439\\u0441\\u0442\\u0432\\u0438\\u044f AI-\\u0430\\u0433\\u0435\\u043d\\u0442\\u043e\\u0432 \\u0441 Minecraft"
 """
 

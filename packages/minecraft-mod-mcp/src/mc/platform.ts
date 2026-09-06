@@ -82,14 +82,20 @@ export async function ensureModJar(mcVersion: string, loader: string): Promise<s
   if (existsSync(cachePath)) return cachePath;
 
   try {
-    const apiResp = await fetch("https://api.github.com/repos/langyo/minecraft-mod-mcp/releases/latest", {
+    const apiResp = await fetch("https://api.github.com/repos/gasada-dev/minecraft-mod-mcp/releases?per_page=10", {
       headers: { "user-agent": "minecraft-mod-mcp", accept: "application/json" },
     });
     if (!apiResp.ok) return null;
-    const rel = (await apiResp.json()) as { assets?: Array<{ name: string; browser_download_url: string }> };
+    const releases = (await apiResp.json()) as Array<{
+      draft?: boolean;
+      prerelease?: boolean;
+      assets?: Array<{ name: string; browser_download_url: string }>;
+    }>;
     const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(`^minecraft-mcp-${esc(mcVersion)}-${esc(loader)}(-v[\\d.]+)?\\.jar$`);
-    const asset = rel.assets?.find((a) => pattern.test(a.name));
+    const pattern = new RegExp(`^minecraft-mcp-${esc(mcVersion)}-${esc(loader)}(?:-v[0-9A-Za-z.-]+)?\\.jar$`);
+    const usable = releases.filter((release) => !release.draft && release.assets?.some((asset) => pattern.test(asset.name)));
+    const release = usable.find((candidate) => !candidate.prerelease) ?? usable[0];
+    const asset = release?.assets?.find((candidate) => pattern.test(candidate.name));
     if (!asset) return null;
 
     const dlResp = await fetch(asset.browser_download_url);

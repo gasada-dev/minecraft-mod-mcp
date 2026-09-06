@@ -1,6 +1,6 @@
 # Руководство по использованию CLI NPM MCP
 
-**[English](../en/CLI.md)** &bull; **[简体中文](../zhs/CLI.md)** &bull; **[繁體中文](../zht/CLI.md)** &bull; **[日本語](../ja/CLI.md)** &bull; **[한국어](../ko/CLI.md)** &bull; **[Français](../fr/CLI.md)** &bull; **[Español](../es/CLI.md)** &bull; **Русский**
+**[English](../en/CLI.md)** &bull; **Русский**
 
 > Пакет `minecraft-mod-mcp` предоставляет полнофункциональный CLI для запуска клиентов и серверов Minecraft, управления версиями и аккаунтами, а также сборки SDK модов — всё из командной строки.
 

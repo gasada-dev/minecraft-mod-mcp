@@ -299,7 +299,7 @@
         :class="{ 'is-visible': aboutVisible }"
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col items-center justify-center gap-3 text-sm text-muted">
-          <a href="https://github.com/langyo/minecraft-mod-mcp" target="_blank" rel="noopener" class="nav-icon-btn no-underline group" title="GitHub">
+          <a href="https://github.com/gasada-dev/minecraft-mod-mcp" target="_blank" rel="noopener" class="nav-icon-btn no-underline group" title="GitHub">
             <div class="i-lucide-github w-5 h-5 group-hover:text-[var(--text-primary)] transition-colors" />
           </a>
           <span class="text-tertiary">「{{ t('site.slogan') }}」</span>
@@ -415,7 +415,7 @@ const steps = computed<Step[]>(() => [
   {
     titleKey: 'quickstart.step4.title',
     descKey: 'quickstart.step4.desc',
-    link: 'https://github.com/langyo/minecraft-mod-mcp/blob/master/docs/guides/en/AI-TOOLS.md',
+    link: 'https://github.com/gasada-dev/minecraft-mod-mcp/blob/master/docs/guides/en/AI-TOOLS.md',
   },
 ])
 
@@ -504,8 +504,8 @@ const heroItems = computed(() => [
   `<p class="text-lg sm:text-xl font-medium mb-2 text-primary">${t('site.tagline')}</p>`,
   `<p class="text-base max-w-xl mx-auto" style="color: var(--text-tertiary)">${t('site.description')}</p>`,
   `<div class="flex flex-wrap items-center justify-center gap-3 mt-8">
-    <a href="https://github.com/langyo/minecraft-mod-mcp/releases/latest" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
-    <a href="https://github.com/langyo/minecraft-mod-mcp" target="_blank" rel="noopener" class="btn-ghost no-underline group"><span class="i-lucide-github w-4 h-4 mr-1.5 opacity-70 group-hover:opacity-100 transition-opacity"></span> GitHub</a>
+    <a href="https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.3.1-wayland.1" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
+    <a href="https://github.com/gasada-dev/minecraft-mod-mcp" target="_blank" rel="noopener" class="btn-ghost no-underline group"><span class="i-lucide-github w-4 h-4 mr-1.5 opacity-70 group-hover:opacity-100 transition-opacity"></span> GitHub</a>
   </div>`,
   `<div class="mt-10 animate-float opacity-20"><span class="i-lucide-chevrons-down inline-block w-6 h-6" style="color: var(--text-primary)"></span></div>`,
 ])

@@ -1,15 +1,12 @@
 plugins {
-    id "fabric-loom" version "1.14-SNAPSHOT"
+    id "fabric-loom" version "1.7-SNAPSHOT"
 }
 
-version = "0.2.1"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
+sourceCompatibility = "21"
+targetCompatibility = "21
 
 repositories {
     mavenCentral()
@@ -26,10 +23,4 @@ dependencies {
     mappings "net.fabricmc:yarn:1.21.9+build.1:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.0"
     implementation "org.java-websocket:Java-WebSocket:1.5.4"
-}
-
-loom {
-    mixin {
-        defaultRefmapName = "mcpmod.refmap.json"
-    }
 }

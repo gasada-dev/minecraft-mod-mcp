@@ -1,6 +1,6 @@
 # AI Tool Integration Guide
 
-**[English](./AI-TOOLS.md)** &bull; **[简体中文](../zhs/AI-TOOLS.md)** &bull; **[繁體中文](../zht/AI-TOOLS.md)** &bull; **[日本語](../ja/AI-TOOLS.md)** &bull; **[한국어](../ko/AI-TOOLS.md)** &bull; **[Français](../fr/AI-TOOLS.md)** &bull; **[Español](../es/AI-TOOLS.md)** &bull; **[Русский](../ru/AI-TOOLS.md)**
+**English** &bull; **[Русский](../ru/AI-TOOLS.md)**
 
 > **🤖 For AI Agents — read this first**
 >
@@ -76,7 +76,7 @@ Common config file locations:
 
 ### 2. Have a Minecraft client running with the mod
 
-Either launch the game yourself (install the mod JAR from [Releases](https://github.com/langyo/minecraft-mod-mcp/releases) into your `mods` folder), or **let the bridge do it** — once connected, call the `launch_minecraft` MCP tool:
+Either launch the game yourself (install the mod JAR from [Releases](https://github.com/gasada-dev/minecraft-mod-mcp/releases) into your `mods` folder), or **let the bridge do it** — once connected, call the `launch_minecraft` MCP tool:
 
 ```
 launch_minecraft(version="1.21.7", loader="forge")
@@ -686,4 +686,4 @@ claude mcp add -s user zai-mcp-server --env Z_AI_API_KEY=<your_zhipu_api_key> --
 7. **Firewall**
    The bridge and mod communicate over loopback only (`127.0.0.1`). No external firewall rule is needed unless you expose the mod's HTTP server on purpose.
 
-> For issues or questions, open an issue on the [GitHub repo](https://github.com/langyo/minecraft-mod-mcp).
+> For issues or questions, open an issue on the [GitHub repo](https://github.com/gasada-dev/minecraft-mod-mcp).

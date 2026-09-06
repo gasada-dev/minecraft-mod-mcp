@@ -31,7 +31,7 @@ npx minecraft-mod-mcp
 npx minecraft-mod-mcp mcp --no-discover
 ```
 
-For the full CLI reference (launching servers, managing versions, accounts, building SDKs), see **[CLI Usage Guide](../../docs/guides/en/CLI.md)** — available in 8 languages.
+For the full CLI reference (launching servers, managing versions, accounts, building SDKs), see **[CLI Usage Guide](../../docs/guides/en/CLI.md)** — available in English and Russian.
 
 ## MCP Configuration
 
@@ -107,7 +107,7 @@ AI Tool ──MCP/stdio──► minecraft-mod-mcp bridge ──HTTP──► Mi
 
 ## Requirements
 
-- Minecraft with the [minecraft-mcp mod](https://github.com/langyo/minecraft-mod-mcp) installed — or just let the `launch_minecraft` / `serve` tools start one for you
+- Minecraft with the [minecraft-mcp mod](https://github.com/gasada-dev/minecraft-mod-mcp) installed — this Wayland-focused fork can also let the `launch_minecraft` / `serve` tools start one for you
 - Node.js 20+ (or Deno, or Bun)
 - Java (auto-downloaded per version when launching via the bridge)
 

@@ -1,6 +1,6 @@
 {
   "name": "minecraft-mod-mcp",
-  "version": "0.3.1-wayland",
+  "version": "0.3.1-wayland.1",
   "description": "MCP server bridge & launcher CLI for Minecraft — connect AI tools to Minecraft via Model Context Protocol, launch and manage instances",
   "type": "module",
   "main": "dist/index.cjs",
@@ -42,12 +42,12 @@
   "license": "MIT OR Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/langyo/minecraft-mod-mcp",
+    "url": "https://github.com/gasada-dev/minecraft-mod-mcp",
     "directory": "packages/minecraft-mod-mcp"
   },
-  "homepage": "https://github.com/langyo/minecraft-mod-mcp#readme",
+  "homepage": "https://github.com/gasada-dev/minecraft-mod-mcp#readme",
   "bugs": {
-    "url": "https://github.com/langyo/minecraft-mod-mcp/issues"
+    "url": "https://github.com/gasada-dev/minecraft-mod-mcp/issues"
   },
   "engines": {
     "node": ">=20"

@@ -2,11 +2,11 @@ plugins {
     id "fabric-loom" version "1.5-SNAPSHOT"
 }
 
-version = "0.2.1"
+version = "0.3.1-wayland.1"
 group = "xyz.langyo"
 
 sourceCompatibility = "21"
-targetCompatibility = "21"
+targetCompatibility = "21
 
 repositories {
     mavenCentral()

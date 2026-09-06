@@ -233,7 +233,7 @@ def _gen_minimal_mdk(version):
         f'neo_version={version}\n'
         f'mod_id=mcpmod\n'
         f'mod_name=ModDev MCP\n'
-        f'mod_version=0.1.1-SNAPSHOT\n'
+        f'mod_version=0.3.1-wayland.1\n'
         f'mod_group_id=xyz.langyo\n'
     )
     wp = NEOFORGE_DEV / "gradle" / "wrapper" / "gradle-wrapper.properties"
@@ -267,7 +267,7 @@ def configure_dual_mods():
 }
 
 group = "xyz.langyo"
-version = "0.1.1-SNAPSHOT"
+version = "0.3.1-wayland.1"
 
 base { archivesName.set("minecraft-mcp-neoforge") }
 
