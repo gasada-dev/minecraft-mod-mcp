@@ -9,7 +9,8 @@
 >
 > **Headline change (2026-09-06, maintainer directive): direct commits and
 > pushes to `master` are allowed. Pull requests and feature branches are
-> optional. The old `dev` integration branch remains retired.**
+> optional; PRs are not used unless the maintainer explicitly asks. The old
+> `dev` integration branch remains retired.**
 
 ---
 
@@ -33,7 +34,7 @@
 
 - One plain English sentence: capitalized first letter, ends with exactly one
   `.`, printable ASCII only (no CJK).
-- PR titles should follow the same rule when a PR is used.
+- PR titles should follow the same rule only when the maintainer explicitly requests a PR.
 - `Revert "..."` subjects produced by `git revert` are exempt.
 - Squash-merge suffix ` (#123)` is allowed.
 - Local check before pushing: `just lint-commits` (validates
@@ -50,9 +51,10 @@
    fabric` or `just build-mod 26.2 forge` (or direct Gradle here); do not build
    the full matrix locally. `generate_mods.py` only generates on demand; keep
    other mod packages.
-2. **Commit and push** directly to `master` by default.
-3. For larger or collaborative changes, optionally use a feature branch and PR
-   against `master` with a compliant title.
+2. **Commit and push** directly to `master` on `origin`, the maintainer's fork.
+   Never push to `upstream`.
+3. Never create, comment on, update, merge, or otherwise touch a PR unless the
+   maintainer explicitly instructs that exact action in this conversation.
 4. **Version bumps belong with the feature/fix**: bump
    `packages/minecraft-mod-mcp/package.json` inside the feature/fix that
    warrants a release; never open standalone version-bump PRs. Releases are
@@ -60,6 +62,8 @@
 
 ## 4. Git push discipline
 
+- Push only to `origin` (`https://github.com/gasada-dev/minecraft-mod-mcp`),
+  the maintainer's fork. Never push to `upstream` (`https://github.com/langyo/minecraft-mod-mcp.git`).
 - **NEVER use bare `git push --force`** — no exceptions for "convenience".
 - Prefer `git push --force-with-lease` for rebase/amend recovery on your own
   feature branch.
@@ -104,8 +108,8 @@
   runs are cancelled automatically; do not add workflows without a
   `concurrency` group.
 - **What runs where**: pushes to `master` run the full pipeline including
-  smoke/screenshot/E2E tests and the push-format guard. PRs, when used, run
-  the build matrix (`ci.yml`) and fast commit/PR-title lint (`commit-lint.yml`).
+  smoke/screenshot/E2E tests and the push-format guard. Explicitly requested
+  PRs run the build matrix (`ci.yml`) and fast commit/PR-title lint (`commit-lint.yml`).
 - **CI is a gate for code failures, not a tea ceremony**: for docs/config-only
   changes you may push once the lint check is green and relevant code checks
   pass, without waiting out the full Windows build matrix. Never push over a
