@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: "25" }
       - run: ./gradlew :packages:common:clean :packages:common:publish --no-daemon --console=plain
       - uses: actions/upload-artifact@v4
@@ -36,7 +36,7 @@ jobs:
         loader: [forge, fabric, neoforge]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: "25" }
       - uses: actions/download-artifact@v4
         with:
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: "25" }
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
@@ -90,7 +90,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: "25" }
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
@@ -103,3 +103,14 @@ jobs:
       - run: npm run build
         working-directory: packages/minecraft-mod-mcp
       - run: python scripts/ci_helper.py e2e --mc-ver 26.2 --loader forge --jdk-ver 25 --mod-jar dist/minecraft-mcp-26.2-forge.jar --world CI_TestWorld --output-json e2e_report.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e_report.json
+            screenshots/ci/
+            /home/runner/.minecraft/mcp_launcher/game/logs/
+            /home/runner/.minecraft/mcp_launcher/game/crash-reports/
+          retention-days: 7
+          if-no-files-found: ignore

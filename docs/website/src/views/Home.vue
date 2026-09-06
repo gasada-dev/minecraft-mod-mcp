@@ -494,7 +494,7 @@ const heroItems = computed(() => [
   `<p class="text-lg sm:text-xl font-medium mb-2 text-primary">${t('site.tagline')}</p>`,
   `<p class="text-base max-w-xl mx-auto" style="color: var(--text-tertiary)">${t('site.description')}</p>`,
   `<div class="flex flex-wrap items-center justify-center gap-3 mt-8">
-    <a href="https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.1" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
+    <a href="https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.2" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
     <a href="https://github.com/gasada-dev/minecraft-mod-mcp" target="_blank" rel="noopener" class="btn-ghost no-underline group"><span class="i-lucide-github w-4 h-4 mr-1.5 opacity-70 group-hover:opacity-100 transition-opacity"></span> GitHub</a>
   </div>`,
   `<div class="mt-10 animate-float opacity-20"><span class="i-lucide-chevrons-down inline-block w-6 h-6" style="color: var(--text-primary)"></span></div>`,

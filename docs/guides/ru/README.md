@@ -22,13 +22,13 @@ Minecraft Mod MCP предоставляет через MCP скриншоты, 
 
 | Версия MC | Forge | Fabric | NeoForge |
 |-----------|:-----:|:------:|:--------:|
-| 26.2 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-forge.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-fabric.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-neoforge.jar) |
+| 26.2 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.2/minecraft-mcp-26.2-forge.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.2/minecraft-mcp-26.2-fabric.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.2/minecraft-mcp-26.2-neoforge.jar) |
 
 Поддерживается только Minecraft **26.2** с Java **25** и Forge, Fabric или NeoForge.
 
 ## Начало работы
 
-1. Скачайте JAR из [v0.4.0-wayland.1](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.1) и поместите его в `mods`.
+1. Скачайте JAR из [v0.4.0-wayland.2](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.2) и поместите его в `mods`.
 2. Установите или запустите мост: `npm install -g minecraft-mod-mcp` либо `npx minecraft-mod-mcp`.
 3. Запустите Minecraft с Forge, Fabric или NeoForge.
 4. Откройте [интеграцию ИИ-инструментов](AI-TOOLS.md), [руководство CLI](CLI.md) и [руководство Wayland](WAYLAND.md).

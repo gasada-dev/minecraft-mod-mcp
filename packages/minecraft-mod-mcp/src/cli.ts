@@ -51,6 +51,7 @@ Common Launch Options (for launch/serve):
   --width <px> / --height <px>      Window dimensions
   --server <host>                   Auto-connect to server on launch
   --server-port <port>              Server port (default: ${GAME.defaultServerPort})
+  --world <name>                    Quick-play singleplayer world
   --dry-run                         Print command without executing
   --mod-jar <path>                  Mod JAR to inject
 
@@ -181,6 +182,7 @@ Options:
       port: { type: "string" },
       server: { type: "string" },
       "server-port": { type: "string", default: String(GAME.defaultServerPort) },
+      world: { type: "string" },
       "dry-run": { type: "boolean", default: false },
       "mod-jar": { type: "string" },
       headless: { type: "boolean", default: false },
@@ -239,6 +241,7 @@ Options:
       values.server,
       values["server-port"],
     ),
+    world: typeof values.world === "string" ? values.world : undefined,
     javaPath: typeof values.java === "string" ? values.java : javaExecPath(config) ?? undefined,
     playerName: account ? accountUsername(account) : PLAYER.defaultName,
     uuid: account ? accountUuid(account) : PLAYER.defaultUuid,

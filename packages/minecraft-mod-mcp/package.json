@@ -1,6 +1,6 @@
 {
   "name": "minecraft-mod-mcp",
-  "version": "0.4.0-wayland.1",
+  "version": "0.4.0-wayland.2",
   "description": "MCP server bridge and launcher CLI for Minecraft 26.2",
   "type": "module",
   "main": "dist/index.cjs",

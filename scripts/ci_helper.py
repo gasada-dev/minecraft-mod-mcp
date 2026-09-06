@@ -29,6 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 MC_DIR = Path(os.environ.get("HOME", os.path.expanduser("~"))) / ".minecraft"
+GAME_DIR = MC_DIR / "mcp_launcher" / "game"
 
 TEST_WORLD_DIR = ROOT / "tests" / "reference-screenshots"
 SCREENSHOT_DIR = ROOT / "screenshots" / "ci"
@@ -438,7 +439,7 @@ def wait_for_mod(url="http://127.0.0.1:9876", timeout=180, start_port=None):
 
 def _dump_launch_diagnostics():
     """On mod-wait timeout, surface why: MC log tail, deployed mods, java liveness."""
-    game_dir = Path(MC_DIR) / "mcp_launcher" / "game"
+    game_dir = GAME_DIR
     mods = game_dir / "mods"
     if mods.is_dir():
         _log(f"[diag] game mods: {sorted(p.name for p in mods.glob('*.jar'))}")
@@ -472,6 +473,11 @@ def _dump_launch_diagnostics():
             _log(f"[diag] failed reading latest.log: {e}")
     else:
         _log(f"[diag] no latest.log at {log}")
+    crash_dir = game_dir / "crash-reports"
+    if not crash_dir.is_dir():
+        crash_dir = MC_DIR / "crash-reports"
+    if crash_dir.is_dir():
+        _log(f"[diag] crash reports: {sorted(p.name for p in crash_dir.glob('*.txt'))}")
     try:
         out = subprocess.run(["pgrep", "-af", "java"], capture_output=True, text=True, timeout=10)
         procs = [l for l in (out.stdout or "").splitlines() if l.strip()]
@@ -684,7 +690,7 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
     install_mod_jar(mod_jar)
 
     if world_name:
-        install_test_world(world_name)
+        install_test_world(world_name, mc_dir=str(GAME_DIR))
 
     version_name = setup_mc_version(mc_ver, loader)
     if not version_name:
@@ -701,8 +707,6 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
     parts = ["-Djava.awt.headless=true"]
     if loader == "forge":
       parts.append("-Dforge.disableEarlyDisplay=true")
-    if world_name:
-        parts.append(f"-Dmcp.test.world={world_name}")
     extra_jvm = " ".join(parts)
 
     launcher = str(Path(__file__).resolve().parent.parent / "packages" / "minecraft-mod-mcp" / "dist" / "cli.js")
@@ -712,8 +716,9 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
         dry = subprocess.run(
             ["node", launcher, "launch", version_name, "--headless",
              "--memory", "512",
-             "--extra-jvm", extra_jvm,
-             "--mod-jar", str(mod_jar), "--dry-run"],
+              "--extra-jvm", extra_jvm,
+              *(["--world", world_name] if world_name else []),
+              "--mod-jar", str(mod_jar), "--dry-run"],
             env=env, capture_output=True, text=True, timeout=120,
         )
         _log("Dry-run launch plan:")
@@ -721,9 +726,10 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
             _log(f"  [plan] {line[:220]}")
         mc_proc = subprocess.Popen(
             ["node", launcher, "launch", version_name, "--headless",
-             "--memory", "512",
-             "--extra-jvm", extra_jvm,
-             "--mod-jar", str(mod_jar)],
+              "--memory", "512",
+              "--extra-jvm", extra_jvm,
+              *(["--world", world_name] if world_name else []),
+              "--mod-jar", str(mod_jar)],
             env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, bufsize=1,
         )
@@ -748,7 +754,9 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
         results["mod_ready"] = {"passed": True, "detail": mod_url}
     except TimeoutError:
         results["mod_ready"] = {"passed": False, "detail": "HTTP server not found"}
-        crash_dir = MC_DIR / "crash-reports"
+        crash_dir = GAME_DIR / "crash-reports"
+        if not crash_dir.is_dir():
+            crash_dir = MC_DIR / "crash-reports"
         if crash_dir.is_dir():
             for f in sorted(crash_dir.glob("*.txt"))[-1:]:
                 _log(f"  CRASH REPORT ({f.name}):")
@@ -836,10 +844,11 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
     kill_minecraft()
     setup_xvfb(screen="1280x720x24")
     install_mod_jar(mod_jar)
-    install_test_world(world_name)
+    install_test_world(world_name, mc_dir=str(GAME_DIR))
 
     version_name = setup_mc_version(mc_ver, loader)
     if not version_name:
+        _log("  E2E [setup]: FAIL - Version setup failed")
         return {"setup": {"passed": False, "detail": "Version setup failed"}}
 
     env = os.environ.copy()
@@ -847,7 +856,7 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
 
     mc_proc = subprocess.Popen(
         ["node", launcher, "launch", version_name,
-         "--memory", "512", "--mod-jar", str(mod_jar)],
+         "--memory", "512", "--world", world_name, "--mod-jar", str(mod_jar)],
         env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, bufsize=1,
     )
@@ -863,26 +872,53 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
     try:
         mod_url = wait_for_mod(timeout=240)
         results["launch"] = {"passed": True, "detail": mod_url}
+        _log(f"  E2E [launch]: PASS - {mod_url}")
     except TimeoutError:
         results["launch"] = {"passed": False, "detail": "Timeout"}
+        _log("  E2E [launch]: FAIL - Timeout")
         kill_minecraft()
         return results
 
-    time.sleep(10)
+    def parse_response(resp):
+        if isinstance(resp, str) and resp.lstrip().startswith("{"):
+            try:
+                return json.loads(resp)
+            except json.JSONDecodeError:
+                pass
+        return resp
+
+    deadline = time.time() + 90
+    while time.time() < deadline:
+        try:
+            player_info = parse_response(api_call(mod_url, "get_player_info", {}))
+            if isinstance(player_info, dict) and player_info.get("name"):
+                results["verify_in_game"] = {"passed": True, "detail": str(player_info)[:100]}
+                _log(f"  E2E [verify_in_game]: PASS - {str(player_info)[:100]}")
+                break
+        except Exception:
+            pass
+        time.sleep(2)
+    else:
+        results["verify_in_game"] = {"passed": False, "detail": "Player did not enter world within 90s"}
+        _log("  E2E [verify_in_game]: FAIL - Player did not enter world within 90s")
 
     e2e_steps = [
-        ("verify_in_game", "get_player_info", {}, lambda r: isinstance(r, dict)),
-        ("game_mode_creative", "set_gamemode", {"mode": "creative"}, lambda r: True),
+        ("game_mode_creative", "set_gamemode", {"mode": "creative"},
+         lambda r: isinstance(parse_response(r), dict) and "gamemode_set" in parse_response(r)),
     ]
 
     for step_name, cmd, params, validator in e2e_steps:
         try:
             resp = api_call(mod_url, cmd, params)
-            results[step_name] = {"passed": validator(resp), "detail": str(resp)[:100]}
+            ok = validator(resp)
+            detail = str(resp)[:100]
+            results[step_name] = {"passed": ok, "detail": detail}
+            _log(f"  E2E [{step_name}]: {'PASS' if ok else 'FAIL'} - {detail}")
         except Exception as e:
             results[step_name] = {"passed": False, "detail": str(e)}
+            _log(f"  E2E [{step_name}]: FAIL - {e}")
 
-    steps_to_screenshot = ["01_ingame", "02_inventory", "03_sign_placed"]
+    steps_to_screenshot = ["ingame"]
     for label in steps_to_screenshot:
         try:
             png = get_screenshot(mod_url)
@@ -891,13 +927,16 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
             ss_path.write_bytes(png)
             ok, detail = verify_screenshot(png)
             results[f"screenshot_{label}"] = {"passed": ok, "detail": detail}
+            _log(f"  E2E [screenshot_{label}]: {'PASS' if ok else 'FAIL'} - {detail}")
 
             ref_path = REF_SCREENSHOT_DIR / f"ref_{mc_ver}_{loader}_{label}.png"
             if ref_path.exists():
                 ok2, detail2 = compare_screenshots_structural(str(ss_path), str(ref_path))
                 results[f"compare_{label}"] = {"passed": ok2, "detail": detail2}
+                _log(f"  E2E [compare_{label}]: {'PASS' if ok2 else 'FAIL'} - {detail2}")
         except Exception as e:
             results[f"screenshot_{label}"] = {"passed": False, "detail": str(e)}
+            _log(f"  E2E [screenshot_{label}]: FAIL - {e}")
 
     kill_minecraft()
     if mc_proc and mc_proc.poll() is None:

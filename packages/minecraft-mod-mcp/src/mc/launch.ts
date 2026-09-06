@@ -130,6 +130,7 @@ export interface LaunchConfig {
   minMemoryMb?: number;
   extraJvmArgs?: string;
   extraGameArgs?: string;
+  world?: string;
   javaPath?: string;
   playerName?: string;
   uuid?: string;
@@ -261,7 +262,7 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
     allArgs.push(`-Dmcp.port=${config.mcpPort}`);
   }
 
-  allArgs.push("-Dmcp.mod.version=0.4.0-wayland.1");
+  allArgs.push("-Dmcp.mod.version=0.4.0-wayland.2");
   allArgs.push(`-Dmcp.mod.loader=${config.loader ?? "forge"}`);
 
   if (targetJavaVersion >= 9) {
@@ -333,6 +334,10 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
 
   if (config.fullscreen) {
     allArgs.push("--fullscreen");
+  }
+
+  if (config.world) {
+    allArgs.push("--quickPlaySingleplayer", config.world);
   }
 
   if (config.extraGameArgs) {
