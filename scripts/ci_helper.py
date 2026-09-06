@@ -335,10 +335,10 @@ def _generate_level_dat(save_dir, world_name):
         write_compound([
             # Data compound
             (10, "Data", lambda: write_compound([
-                (4, "DataVersion", lambda: write_int(3953)),
-                (4, "version", lambda: write_int(19133)),
+                (3, "DataVersion", lambda: write_int(3953)),
+                (3, "version", lambda: write_int(19133)),
                 (8, "LevelName", lambda: write_string(world_name)),
-                (4, "GameType", lambda: write_int(1)),
+                (3, "GameType", lambda: write_int(1)),
                 (1, "MapFeatures", lambda: write_byte(1)),
                 (1, "allowCommands", lambda: write_byte(1)),
                 (1, "hardcore", lambda: write_byte(0)),
