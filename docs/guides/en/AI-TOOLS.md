@@ -79,7 +79,7 @@ Common config file locations:
 Either launch the game yourself (install the mod JAR from [Releases](https://github.com/gasada-dev/minecraft-mod-mcp/releases) into your `mods` folder), or **let the bridge do it** — once connected, call the `launch_minecraft` MCP tool:
 
 ```
-launch_minecraft(version="1.21.7", loader="forge")
+launch_minecraft(version="26.2", loader="forge")
 ```
 
 The bridge downloads the version, picks a free MCP port, injects the mod, and starts the client. See [Launching Minecraft](#launching-minecraft).
@@ -133,7 +133,7 @@ Minecraft is a GUI app. To run it on a headless Linux box you need one of:
 - A real X11/Wayland session (e.g. an XFCE desktop — `echo $DISPLAY` should be set, e.g. `:0`).
 - **Xvfb** (virtual framebuffer) if there is no physical/remote display:
   ```bash
-  xvfb-run -a -s "-screen 0 1280x720x24" npx -y minecraft-mod-mcp launch 1.21.7 --loader forge
+  xvfb-run -a -s "-screen 0 1280x720x24" npx -y minecraft-mod-mcp launch 26.2 --loader forge
   ```
   Screenshots still work under Xvfb, so this is enough for automated/agent-driven testing.
 - A dedicated server only (no client GUI): use the `server` / `launch_server` tools or `npx minecraft-mod-mcp server <version>`. This needs no display at all.
@@ -151,10 +151,10 @@ The bridge can bring up a whole game session through MCP tools or the CLI — no
 | Goal | MCP tool | CLI equivalent |
 |------|----------|----------------|
 | List supported versions | `list_supported_versions` | `npx minecraft-mod-mcp list` |
-| Install a version+loader | `install_version` | `npx minecraft-mod-mcp install 1.21.7 --loader forge` |
-| Start a client | `launch_minecraft` | `npx minecraft-mod-mcp launch 1.21.7 --loader forge` |
-| Start a dedicated server | `launch_server` | `npx minecraft-mod-mcp server 1.21.7` |
-| Server + auto-connected client | `serve` | `npx minecraft-mod-mcp serve 1.21.7` |
+| Install a version+loader | `install_version` | `npx minecraft-mod-mcp install 26.2 --loader forge` |
+| Start a client | `launch_minecraft` | `npx minecraft-mod-mcp launch 26.2 --loader forge` |
+| Start a dedicated server | `launch_server` | `npx minecraft-mod-mcp server 26.2` |
+| Server + auto-connected client | `serve` | `npx minecraft-mod-mcp serve 26.2` |
 | Create an offline account | `create_offline_account` | `npx minecraft-mod-mcp auth offline Player` |
 | Kill the running client | `kill_minecraft` | — |
 

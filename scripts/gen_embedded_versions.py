@@ -19,7 +19,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from version_config import (  # noqa: E402
     ALL_VERSIONS, FG_ERAS, get_api_group, get_fabric_loom,
-    get_neoforge_gradle, LEGACY_ERAS,
+    get_neoforge_gradle,
 )
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +53,7 @@ def build() -> dict:
         entry = {
             "forge": info.get("forge", ""),
             "fg_era": info.get("fg_era", ""),
-            "java": info.get("java", 17),
+            "java": info.get("java", 25),
             "version_id": info.get("version_id", mc),
         }
         if "mappings" in info:
@@ -80,7 +80,7 @@ def build() -> dict:
     neoforge_gradle = {
         "mdg_2_0_prefix": "2.0",
         "mdg_2_0_gradle": "9.3.1",
-        "mdg_other_gradle": "8.10",
+        "mdg_other_gradle": "9.3.1",
     }
 
     return {
@@ -89,7 +89,7 @@ def build() -> dict:
         "api_groups": api_groups,
         "fabric_loom": fabric_loom,
         "neoforge_gradle": neoforge_gradle,
-        "legacy": {"eras": sorted(LEGACY_ERAS)},
+        "legacy": {"eras": []},
     }
 
 

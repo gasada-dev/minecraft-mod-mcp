@@ -35,34 +35,13 @@ build-mod mc loader="forge":
 build-common:
     python scripts/build_common.py
 
-# Prepare all caches
-prepare-cache:
-    python scripts/prepare_cache.py
-
-# Download 1.7.x Gradle cache from GitHub Release (skips setupDecompWorkspace)
-prepare-cache-1.7x:
-    node scripts/ensure-1.7x-cache.mjs
-
-# Ensure JDK 8 is available (needed for 1.7.x - 1.12.2 builds)
-ensure-jdk8:
-    node scripts/ensure-jdk.mjs 8 --print-home
-
-# Ensure JDK 17 is available (needed for 1.17.x - 1.19.x builds)
-ensure-jdk17:
-    node scripts/ensure-jdk.mjs 17 --print-home
-
-# Ensure JDK 21 is available (needed for 1.20.6+ builds)
-ensure-jdk21:
-    node scripts/ensure-jdk.mjs 21 --print-home
-
-# Full pipeline: generate + cache + build
+# Full pipeline: verify projects + build
 full *ARGS:
     python scripts/generate_mods.py {{ ARGS }}
     python scripts/generate_sources.py {{ ARGS }}
-    python scripts/prepare_cache.py
     python scripts/build_all.py {{ ARGS }}
 
-# Generate mod projects for all versions
+# Verify Minecraft 26.2 mod projects
 generate *ARGS:
     python scripts/generate_mods.py {{ ARGS }}
     python scripts/generate_sources.py {{ ARGS }}
@@ -96,8 +75,7 @@ send cmd:
     python scripts/mc_vtty.py --send '{{ cmd }}'
 
 # Launch MC version via daemon (resolves short name to version_id)
-# Usage: just launch 1.12.2         -> uses version_id from config
-#        just launch 1.21.7 neoforge
+# Usage: just launch 26.2 forge
 launch mc loader="forge":
     python scripts/jf.py launch {{ mc }} {{ loader }}
 
@@ -134,8 +112,7 @@ kill:
 # ============================================================
 
 # Smoke test a specific MC version (full E2E)
-# Usage: just smoke 1.12.2
-#        just smoke 1.21.7-forge-57.0.2
+# Usage: just smoke 26.2
 smoke mc *ARGS:
     python scripts/jf.py smoke {{ mc }} {{ ARGS }}
 
@@ -148,7 +125,7 @@ test-all:
     python scripts/test_version.py --all
 
 # Quick local smoke: install + launch + screenshot + kill (no daemon needed)
-# Usage: just local-smoke 1.12.2
+# Usage: just local-smoke 26.2
 local-smoke mc loader="forge":
     python scripts/jf.py local-smoke {{ mc }} {{ loader }}
 
@@ -157,8 +134,7 @@ local-smoke mc loader="forge":
 # ============================================================
 
 # Launch MC directly (non-blocking, via MCP CLI)
-# Usage: just run 1.12.2 forge
-#        just run 1.21.7 neoforge --mc-dir "C:\custom\.minecraft"
+# Usage: just run 26.2 forge
 run version loader="forge" *ARGS:
     node {{ mcp }}/dist/cli.js launch {{ version }} --loader {{ loader }} {{ ARGS }}
 

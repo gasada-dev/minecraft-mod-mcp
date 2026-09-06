@@ -9,7 +9,7 @@ import { fetchWithFallback } from "./proxy.js";
 /**
  * Generic runner for the Forge/NeoForge installer `processors` pipeline.
  *
- * Modern Forge (1.13+, "fg3" through "mc26") does not ship a launchable
+ * Current Forge does not ship a launchable
  * client jar. Instead the installer ships an `install_profile.json` whose
  * `processors` array describes a sequence of Java tools (jarsplitter,
  * ForgeAutoRenamingTool, binarypatcher, …) that take the vanilla client jar
@@ -45,7 +45,7 @@ export interface ProcessorContext {
   side: "client" | "server";
   /** Vanilla jar for this side: versionsDir/<mc>/<mc>.jar (client) or server jar. */
   minecraftJar: string;
-  /** Java executable used to run the processor tools (any JDK 8+). */
+  /** Java 25 executable used to run processor tools. */
   javaExecutable: string;
 }
 

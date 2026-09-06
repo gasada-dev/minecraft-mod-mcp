@@ -257,7 +257,7 @@ export const TOOLS: ToolDef[] = [
     name: "launch_minecraft",
     description: "Launch a Minecraft instance with the specified version and mod loader. Automatically downloads and installs the version if not already present.",
     inputSchema: z.object({
-      version: z.string().describe("Minecraft version, e.g. \"1.21.7\", \"26.1.2\"."),
+      version: z.literal("26.2").describe("Minecraft 26.2."),
       loader: zOpt(z.enum(["forge", "fabric", "neoforge"])).default("forge"),
       memory: zOpt(z.number()).describe("Max memory pool in MB (default: 2048)"),
       min_memory: zOpt(z.number()).describe("Min memory pool in MB"),
@@ -284,7 +284,7 @@ export const TOOLS: ToolDef[] = [
     name: "install_version",
     description: "Download and install a Minecraft version with the specified mod loader. Downloads base MC + loader (Forge/Fabric/NeoForge).",
     inputSchema: z.object({
-      version: z.string().describe("Minecraft version, e.g. \"1.21.7\", \"26.1.2\". Use list_supported_versions to see available versions."),
+      version: z.literal("26.2").describe("Minecraft 26.2."),
       loader: zOpt(z.enum(["forge", "fabric", "neoforge"])).default("forge"),
     }),
   },
@@ -319,7 +319,7 @@ export const TOOLS: ToolDef[] = [
     name: "install_server",
     description: "Download and set up a Minecraft server. Supports vanilla, Paper, and Spigot frameworks. Generates server.properties with custom settings.",
     inputSchema: z.object({
-      version: z.string().describe("Minecraft version, e.g. \"1.21.11\", \"26.1.2\"."),
+      version: z.literal("26.2").describe("Minecraft 26.2."),
       loader: zOpt(z.enum(["forge", "fabric", "neoforge"])).default("forge"),
       server_type: zOpt(z.enum(["vanilla", "spigot", "craftbukkit", "paper", "forge", "fabric", "neoforge"])).describe("Server framework (default: vanilla)"),
       port: zOpt(z.number()).describe("Server port (default: 25565)"),

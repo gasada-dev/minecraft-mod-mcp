@@ -8,8 +8,8 @@
 **AI-powered Minecraft mod development toolkit, maintained for Wayland desktops**
 
 [![License](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0%20%7C%20CC0--1.0-blue.svg)](#license)
-[![Java](https://img.shields.io/badge/java-8--25-red.svg)](https://www.java.com/)
-[![Release](https://img.shields.io/github/v/release/gasada-dev/minecraft-mod-mcp)](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.3.1-wayland.1)
+[![Java](https://img.shields.io/badge/java-25-red.svg)](https://www.java.com/)
+[![Release](https://img.shields.io/github/v/release/gasada-dev/minecraft-mod-mcp)](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.1)
 
 **English** &bull; **[Русский](docs/guides/ru/README.md)**
 
@@ -36,15 +36,13 @@ Minecraft Mod MCP exposes game controls through MCP: screenshots, clicks, typing
 
 | MC Version | Forge | Fabric | NeoForge |
 |------------|:-----:|:------:|:--------:|
-| 26.2 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-26.2-forge.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-26.2-fabric.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-26.2-neoforge.jar) |
-| 26.1.2 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-26.1.2-forge.jar) | — | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-26.1.2-neoforge.jar) |
-| 1.21.11 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-1.21.11-forge.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-1.21.11-fabric.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.3.1-wayland.1/minecraft-mcp-1.21.11-neoforge.jar) |
+| 26.2 | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-forge.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-fabric.jar) | [⬇](https://github.com/gasada-dev/minecraft-mod-mcp/releases/download/v0.4.0-wayland.1/minecraft-mcp-26.2-neoforge.jar) |
 
-Supported configurations span Minecraft **1.7.2 through 26.2**. See [fork releases](https://github.com/gasada-dev/minecraft-mod-mcp/releases) for available JARs.
+Only Minecraft **26.2** is supported, with Java **25** and Forge, Fabric, or NeoForge.
 
 ## Getting started
 
-1. Download a JAR from [v0.3.1-wayland.1](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.3.1-wayland.1) and place it in Minecraft's `mods` folder.
+1. Download a JAR from [v0.4.0-wayland.1](https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.1) and place it in Minecraft's `mods` folder.
 2. Install or run bridge: `npm install -g minecraft-mod-mcp` or `npx minecraft-mod-mcp`.
 3. Launch Minecraft with Forge, Fabric, or NeoForge; mod starts its local HTTP server.
 4. Follow [AI Tool Integration](docs/guides/en/AI-TOOLS.md), [CLI usage](docs/guides/en/CLI.md), and [Wayland troubleshooting](docs/guides/en/WAYLAND.md).

@@ -351,19 +351,5 @@ export function resolveClasspath(libraries: Library[]): string[] {
     }
   }
 
-  const patched = patchClasspath(classpath);
-
-  return patched;
-}
-
-function patchClasspath(classpath: string[]): string[] {
-  return classpath.map(p => {
-    if (p.includes("launchwrapper-1.9")) {
-      const better = p
-        .replace(/launchwrapper[\\/]1\.9[\\/]/, "launchwrapper/1.12/")
-        .replace("launchwrapper-1.9.jar", "launchwrapper-1.12.jar");
-      if (existsSync(better)) return better;
-    }
-    return p;
-  });
+  return classpath;
 }

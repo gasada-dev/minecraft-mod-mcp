@@ -68,16 +68,16 @@ minecraft-mod-mcp launch <version> [options]
 
 ```bash
 # Запуск с 4 ГБ ОЗУ, полноэкранный режим
-minecraft-mod-mcp launch 1.21.11 --memory 4096 --fullscreen --loader fabric
+minecraft-mod-mcp launch 26.2 --memory 4096 --fullscreen --loader fabric
 
 # Запуск с пользовательскими флагами JVM, автоподключение к серверу
-minecraft-mod-mcp launch 26.1.2 --jvm-args "-XX:+UseG1GC -Dfml.readTimeout=120" --server myserver.com
+minecraft-mod-mcp launch 26.2 --jvm-args "-XX:+UseG1GC -Dfml.readTimeout=120" --server myserver.com
 
 # Запуск в оконном режиме 1280x720
-minecraft-mod-mcp launch 1.20.6 --width 1280 --height 720 --loader neoforge
+minecraft-mod-mcp launch 26.2 --width 1280 --height 720 --loader neoforge
 
 # Предпросмотр команды запуска
-minecraft-mod-mcp launch 1.21.11 --dry-run
+minecraft-mod-mcp launch 26.2 --dry-run
 ```
 
 ---
@@ -105,13 +105,13 @@ minecraft-mod-mcp server <version> [options]
 
 ```bash
 # Запуск сервера с 4 ГБ ОЗУ
-minecraft-mod-mcp server 1.21.11 --memory 4096
+minecraft-mod-mcp server 26.2 --memory 4096
 
 # Запуск с пользовательской настройкой GC
-minecraft-mod-mcp server 26.1.2 --jvm-args "-XX:+UseZGC -XX:+ZGenerational" --memory 8192
+minecraft-mod-mcp server 26.2 --jvm-args "-XX:+UseZGC -XX:+ZGenerational" --memory 8192
 
 # Сервер Fabric с модом
-minecraft-mod-mcp server 1.21.11 --loader fabric --mod-jar ./path/to/mod.jar
+minecraft-mod-mcp server 26.2 --loader fabric --mod-jar ./path/to/mod.jar
 ```
 
 ---
@@ -146,7 +146,7 @@ minecraft-mod-mcp serve <version> [options]
 
 ```bash
 # Полное окружение: 4 ГБ клиент, 2 ГБ сервер, полный экран
-minecraft-mod-mcp serve 1.21.11 --memory 4096 --server-memory 2048 --fullscreen
+minecraft-mod-mcp serve 26.2 --memory 4096 --server-memory 2048 --fullscreen
 ```
 
 ---
@@ -188,8 +188,8 @@ minecraft-mod-mcp serve 1.21.11 --memory 4096 --server-memory 2048 --fullscreen
 Опции `--jvm-args` и `--game-args` принимают аргументы, разделённые пробелами. В оболочках, разделяющих по пробелам, заключайте значение в кавычки:
 
 ```bash
-minecraft-mod-mcp launch 1.21.11 --jvm-args "-XX:+UseG1GC -XX:MaxGCPauseMillis=50"
-minecraft-mod-mcp server 1.21.11 --game-args "--port 25566 --max-players 10"
+minecraft-mod-mcp launch 26.2 --jvm-args "-XX:+UseG1GC -XX:MaxGCPauseMillis=50"
+minecraft-mod-mcp server 26.2 --game-args "--port 25566 --max-players 10"
 ```
 
 ---

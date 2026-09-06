@@ -13,7 +13,7 @@ Works with **OpenCode**, **Claude Code**, **Cursor**, and any MCP-compatible AI 
 ## Features
 
 - **35+ MCP tools**: screenshot, click, type, scroll, drag, hotkey, execute commands, query player/world state
-- **Multi-version**: Minecraft 1.8.9 through 26.2, Forge / Fabric / NeoForge
+- **Minecraft 26.2 only**: Forge / Fabric / NeoForge, Java 25
 - **Zero-config port discovery**: mod and server auto-negotiate ports (9876–9000)
 - **Cross-runtime**: Node.js 20+, Deno, Bun
 - **MCP stdio transport**: the bridge speaks the Model Context Protocol over stdio and proxies every call to the in-game mod's HTTP API
@@ -109,7 +109,7 @@ AI Tool ──MCP/stdio──► minecraft-mod-mcp bridge ──HTTP──► Mi
 
 - Minecraft with the [minecraft-mcp mod](https://github.com/gasada-dev/minecraft-mod-mcp) installed — this Wayland-focused fork can also let the `launch_minecraft` / `serve` tools start one for you
 - Node.js 20+ (or Deno, or Bun)
-- Java (auto-downloaded per version when launching via the bridge)
+- Java 25 (auto-downloaded when launching via the bridge)
 
 ## License
 

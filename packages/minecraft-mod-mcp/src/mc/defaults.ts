@@ -21,12 +21,12 @@ export const GAME = {
   defaultServerMemoryMb: 1024,
   defaultServerPort: 25565,
   serverStartupWaitMs: 15000,
-  defaultVersion: "1.21.7",
+  defaultVersion: "26.2",
   defaultLoader: "forge",
   defaultLanguage: "en-US",
   defaultDownloadSource: "mojang" as const,
-  javaVersionFallback: 17,
-  javaVersionThresholds: { mc117: 17, mc116: 16, mc113: 13 } as Record<string, number>,
+  javaVersionFallback: 25,
+  javaVersionThresholds: {} as Record<string, number>,
   defaultOptionsTxt: [
     "version:29",
     "autoJump:false",
@@ -82,10 +82,6 @@ export const PATHS = {
 
 export const JAVA = {
   jdkDirPrefixes: {
-    8: "eclipse_adoptium-8",
-    16: "eclipse_foundation-16",
-    17: "eclipse_adoptium-17",
-    21: "eclipse_adoptium-21",
     25: "eclipse_adoptium-25",
   } as Record<number, string>,
   adoptiumApiUrl: "https://api.adoptium.net/v3/assets/latest",
@@ -140,7 +136,7 @@ export const SERVER = {
   simulationDistance: 10,
   maxWorldSize: 29999984,
   connectHost: "localhost",
-  defaultJavaVersion: 21,
+  defaultJavaVersion: 25,
   userAgent: "minecraft-mcp",
   bindAddress: "0.0.0.0",
   eulaFileName: "eula.txt",
@@ -164,7 +160,7 @@ export const BUILD = {
 } as const;
 
 export const FABRIC = {
-  defaultLoaderVersion: "0.16.14",
+  defaultLoaderVersion: "0.19.5",
   defaultInstallerVersion: "0.11.2",
   mavenBaseUrl: "https://maven.fabricmc.net",
 } as const;

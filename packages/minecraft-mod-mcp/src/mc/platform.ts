@@ -1,5 +1,6 @@
 import { join, resolve, dirname } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { crossHomedir, isWindows, isMacos, classpathSeparator as cpSep } from "../runtime/detector.js";
 import { detectJavas } from "./javaDetect.js";
 import { PATHS, JAVA } from "./defaults.js";
@@ -163,14 +164,14 @@ export function javaExec(javaVersion: number): string {
 
 export function findJavaOnPath(): string | null {
   const exe = isWindows() ? "java.exe" : "java";
-  return exe;
+  return javaMajorVersion(exe) === 25 ? exe : null;
 }
 
 export function findJavaForVersion(targetVersion: number): string {
   const home = jdkHome(targetVersion);
   if (home) {
     const exe = isWindows() ? join(home, "bin", "java.exe") : join(home, "bin", "java");
-    if (existsSync(exe)) return exe;
+    if (existsSync(exe) && javaMajorVersion(exe) === targetVersion) return exe;
   }
 
   const all = detectJavas();
@@ -185,10 +186,18 @@ export function findJavaForVersion(targetVersion: number): string {
     const exe = isWindows()
       ? join(pick.path, "bin", "java.exe")
       : join(pick.path, "bin", "java");
-    if (existsSync(exe)) return exe;
+    if (existsSync(exe) && javaMajorVersion(exe) === targetVersion) return exe;
   }
 
-  return isWindows() ? "java.exe" : "java";
+  const pathJava = findJavaOnPath();
+  if (pathJava && javaMajorVersion(pathJava) === targetVersion) return pathJava;
+  throw new Error(`Java ${targetVersion} not found`);
+}
+
+function javaMajorVersion(exe: string): number | null {
+  const result = spawnSync(exe, ["-version"], { encoding: "utf-8" });
+  const match = `${result.stdout}${result.stderr}`.match(/version "(?:1\.)?(\d+)/);
+  return match ? Number(match[1]) : null;
 }
 
 export function classpathSeparator(): string {

@@ -82,7 +82,7 @@ def cmd_status(args):
 
 
 def cmd_launch(args):
-    mc = args[0] if args else "1.21.7"
+    mc = args[0] if args else "26.2"
     loader = args[1] if len(args) > 1 else "forge"
     vid = resolve_version_id(mc)
     r = send_tcp({"cmd": "launch", "version": vid, "loader": loader})
@@ -129,16 +129,18 @@ def cmd_kill(args):
 
 
 def cmd_smoke(args):
-    mc = args[0] if args else "1.21.7"
-    vid = resolve_version_id(mc)
+    mc = args[0] if args else "26.2"
     import subprocess
-    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "smoke_test.py")
-    r = subprocess.run([sys.executable, script, vid] + args[1:])
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ci_helper.py")
+    r = subprocess.run([
+        sys.executable, script, "smoke", "--mc-ver", mc,
+        "--loader", "forge", "--jdk-ver", "25",
+    ] + args[1:])
     sys.exit(r.returncode)
 
 
 def cmd_local_smoke(args):
-    mc = args[0] if args else "1.12.2"
+    mc = args[0] if args else "26.2"
     loader = args[1] if len(args) > 1 else "forge"
     vid = resolve_version_id(mc)
 
@@ -177,7 +179,7 @@ def cmd_local_smoke(args):
 
 
 def cmd_install_mod(args):
-    mc = args[0] if args else "1.12.2"
+    mc = args[0] if args else "26.2"
     loader = args[1] if len(args) > 1 else "forge"
     from test_version import clear_mods, install_mod, find_mod_jar
     jar = find_mod_jar(mc, loader)
@@ -207,6 +209,9 @@ COMMANDS = {
 
 
 def main():
+    if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        return
     if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
         print(__doc__)
         sys.exit(1)

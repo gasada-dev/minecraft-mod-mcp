@@ -16,22 +16,8 @@ import { createOfflineUuid } from "../mc/auth.js";
 import { versionsDir, ensureModJar } from "../mc/platform.js";
 import { existsSync, copyFileSync, mkdirSync } from "node:fs";
 
-function mcVersionGte(version: string, target: string): boolean {
-  const parse = (v: string) => v.split(".").map(Number);
-  const a = parse(version), b = parse(target);
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const x = a[i] ?? 0, y = b[i] ?? 0;
-    if (x > y) return true;
-    if (x < y) return false;
-  }
-  return true;
-}
-
-function buildServerConnectArgs(host: string, port: number, mcVersion: string): string {
-  if (mcVersionGte(mcVersion, "1.20.5")) {
-    return `--quickPlayMultiplayer ${host}:${port}`;
-  }
-  return `--server ${host} --port ${port}`;
+function buildServerConnectArgs(host: string, port: number): string {
+  return `--quickPlayMultiplayer ${host}:${port}`;
 }
 
 const MANAGEMENT_TOOLS = new Set([
@@ -436,7 +422,7 @@ async function serveTool(params: Record<string, unknown>, mod: ModClient): Promi
     maxMemoryMb: clientMem,
     minMemoryMb: config.min_memory_mb,
     extraJvmArgs: config.java_args,
-    extraGameArgs: buildServerConnectArgs(SERVER.connectHost, srv.port, version),
+    extraGameArgs: buildServerConnectArgs(SERVER.connectHost, srv.port),
     javaPath: javaExecPath(config) ?? undefined,
     playerName: account ? accountUsername(account) : PLAYER.defaultName,
     uuid: account ? accountUuid(account) : PLAYER.defaultUuid,

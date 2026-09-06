@@ -4,7 +4,7 @@ import { inflateRawSync } from "node:zlib";
 import { crossHomedir, isWindows, isMacos } from "../runtime/detector.js";
 import type { Library, VersionJson } from "./versionJson.js";
 import { collectAllArgs, resolveClasspath, shouldApply, libraryPath } from "./versionJson.js";
-import { nativesDir, assetsDir, versionsDir, librariesDir, classpathSeparator, findJavaForVersion, jdkHome, launcherDir } from "./platform.js";
+import { nativesDir, assetsDir, versionsDir, librariesDir, classpathSeparator, findJavaForVersion, jdkHome } from "./platform.js";
 import { loadVersionsData, type VersionsData } from "./versionsData.js";
 import { getVersionById, type Loader } from "./versions.js";
 import { installedJavaHome, ensureJavaInstalled } from "./javaDownload.js";
@@ -57,17 +57,8 @@ function extractNatives(libraries: Library[], nDir: string): void {
         const relPath = (lib.downloads.classifiers[nativeClass] as Record<string, unknown>).path as string;
         if (relPath) nativePath = join(librariesDir(), relPath);
       }
-      // Legacy native format (<=1.19.3): the classifier jar may be on disk even
-      // when the classifier download metadata is absent on the merged entry.
-      // Reconstruct the path from the library name + classifier suffix.
-      if (!nativePath) {
-        const constructed = libraryPath(`${lib.name}:${nativeClass}`);
-        if (existsSync(constructed)) nativePath = constructed;
-      }
     }
 
-    // Modern native format (1.19.4+): natives are their own library entries,
-    // e.g. name "org.lwjgl:lwjgl:3.3.1:natives-linux".
     if (!nativePath && lib.name.includes("natives")) {
       nativePath = libraryPath(lib.name);
     }
@@ -167,17 +158,7 @@ const LEGACY_JVM_ARGS = [
   "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED",
 ];
 
-function inferJavaFromVersion(vj: VersionJson): number {
-  const id = (vj.inheritsFrom ?? vj.id ?? "").replace(/-/g, ".");
-  // MC 26.x (the 2026 release line) requires Java 25.
-  if (/^26\./.test(id)) return 25;
-  const m = id.match(/1\.(\d+)/);
-  if (!m) return GAME.javaVersionFallback;
-  const minor = parseInt(m[1]);
-  if (minor >= 20) return 21;
-  if (minor >= 17) return 17;
-  return 8;
-}
+function inferJavaFromVersion(_vj: VersionJson): number { return 25; }
 
 function findExactJava(targetVersion: number): string | null {
   const home = jdkHome(targetVersion);
@@ -230,9 +211,7 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
   ensureOptionsTxt(mcDir);
 
   // Deploy the mod JAR into the instance's mods/ directory for every loader.
-  // All three loaders discover mods from mods/ — the jar must NOT also enter
-  // the classpath: on module-aware Forge (1.17+) the duplicate Automatic-Module
-  // triggers "ResolutionException: module mcpmod contains package ..." at boot.
+  // All three loaders discover mods from mods/; do not add it to classpath.
   if (config.modJar && existsSync(config.modJar)) {
     deployModToModsDir(mcDir, config.modJar);
   }
@@ -248,10 +227,6 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
   const classpathPaths = resolveClasspath(vj.libraries);
 
   const inheritsFrom = vj.inheritsFrom ?? versionInfo?.mc_version ?? config.versionId;
-  // Forge 1.17-1.20.4 (bootstraplauncher layout) puts a patched Minecraft on
-  // the module path; adding the vanilla base jar to the classpath as well
-  // creates a second Automatic-Module (_1._17._1) and JPMS aborts with
-  // "Modules ... and minecraft export package net.minecraft...".
   const bootstrapLayout = (vj.libraries ?? []).some(
     (l) => typeof l.name === "string" && l.name.startsWith("cpw.mods:bootstraplauncher"),
   );
@@ -261,15 +236,6 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
   const versionJar = join(versionsDir(), config.versionId, `${config.versionId}.jar`);
   if (existsSync(versionJar) && versionJar !== baseJar) classpathPaths.push(versionJar);
 
-  const needsSortFix = needsLegacySortFix(config.versionId, targetJavaVersion);
-  let sortFixApplied = false;
-  if (needsSortFix) {
-    const sortFixJar = join(launcherDir(), "legacyfix", "sortfix-tweaker.jar");
-    if (existsSync(sortFixJar)) {
-      classpathPaths.unshift(sortFixJar);
-      sortFixApplied = true;
-    }
-  }
 
   const sep = classpathSeparator();
   const classpath = classpathPaths.join(sep);
@@ -295,16 +261,13 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
     allArgs.push(`-Dmcp.port=${config.mcpPort}`);
   }
 
-  allArgs.push("-Dmcp.mod.version=0.3.1-wayland.1");
+  allArgs.push("-Dmcp.mod.version=0.4.0-wayland.1");
   allArgs.push(`-Dmcp.mod.loader=${config.loader ?? "forge"}`);
 
   if (targetJavaVersion >= 9) {
     allArgs.push(...LEGACY_JVM_ARGS);
   }
 
-  if (versionInfo && isLegacyForge(config.versionId, versionInfo)) {
-    allArgs.push("-Dfml.ignoreInvalidMinecraftCertificates=true");
-  }
 
   if (config.extraJvmArgs) {
     for (const arg of config.extraJvmArgs.split(/\s+/)) {
@@ -367,9 +330,6 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
   );
   allArgs.push(...resolvedGame);
 
-  if (sortFixApplied) {
-    allArgs.push("--tweakClass", "mcp.fix.SortFixTweaker");
-  }
 
   if (config.fullscreen) {
     allArgs.push("--fullscreen");
@@ -382,19 +342,4 @@ export function buildLaunchCommand(config: LaunchConfig, vj: VersionJson, data?:
   }
 
   return { java, args: allArgs, classpath, mainClass: vj.mainClass, javaVersion: targetJavaVersion };
-}
-
-const SORT_FIX_PREFIXES = ["1.7.2", "1.7.10", "1.6", "1.5"];
-
-function needsLegacySortFix(versionId: string, javaVersion: number): boolean {
-  if (javaVersion !== 8) return false;
-  return SORT_FIX_PREFIXES.some(p => versionId.startsWith(p));
-}
-
-function isLegacyForge(versionId: string, info: { mc_version: string; forge?: string | null }): boolean {
-  if (!info.forge) return false;
-  const mc = info.mc_version;
-  const parts = mc.split(".").map(Number);
-  if (parts.length < 2) return false;
-  return parts[0] === 1 && parts[1] <= 12;
 }

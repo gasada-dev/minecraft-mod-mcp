@@ -33,7 +33,7 @@ export function detectJavas(): JavaInfo[] {
     if (!existsSync(javaBin)) continue;
 
     const parsed = parseReleaseFile(home);
-    if (parsed) {
+    if (parsed?.version === 25) {
       const isJdk = existsSync(join(home, "lib", "tools.jar")) || existsSync(join(home, "include"));
       results.push({ path: home, version: parsed.version, vendor: parsed.vendor, isJdk });
     }
@@ -45,7 +45,7 @@ export function detectJavas(): JavaInfo[] {
 
 function envCandidates(): string[] {
   const paths: string[] = [];
-  for (const var_ of ["JAVA_HOME", "JDK_8_HOME", "JDK_16_HOME", "JDK_17_HOME", "JDK_21_HOME", "JDK_25_HOME"]) {
+  for (const var_ of ["JAVA_HOME", "JAVA_HOME_25", "JAVA_HOME_25_X64", "JDK_25_HOME"]) {
     const val = process.env[var_];
     if (val && existsSync(val)) paths.push(val);
   }

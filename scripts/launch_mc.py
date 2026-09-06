@@ -2,8 +2,8 @@
 Handles classpath construction, native extraction, and proper argument building.
 
 Usage:
-  python scripts/launch_mc.py 1.21.7-forge-57.0.2
-  python scripts/launch_mc.py 1.21.7-forge-57.0.2 --jvm-args "-Xmx4G -Xms2G"
+  python scripts/launch_mc.py 26.2-forge-65.1.3
+  python scripts/launch_mc.py 26.2-forge-65.1.3 --jvm-args "-Xmx4G -Xms2G"
 
 TODO: add Fabric loader profile installation support (was install_fabric.py)
 """
@@ -1019,32 +1019,25 @@ _IS_WINDOWS = platform.system() == "Windows"
 _EXE_SUFFIX = ".exe" if _IS_WINDOWS else ""
 
 
-_JAVA_HOME_ENV_KEYS = ["JAVA_HOME", "JAVA_HOME_8_X64", "JAVA_HOME_17_X64", "JAVA_HOME_21_X64",
-                       "JAVA_HOME_25_X64", "JDK_21"]
+_JAVA_HOME_ENV_KEYS = ["JAVA_HOME", "JAVA_HOME_25_X64", "JAVA_HOME_25", "JDK_25_HOME"]
 
 
 def find_java(version_java=None):
-    ver = int(version_java) if version_java else None
-    if ver:
-        ver_keys = [f"JAVA_HOME_{ver}_X64", f"JAVA_HOME_{ver}"]
-        for ek in ver_keys:
-            home = os.environ.get(ek)
-            if home:
-                exe = os.path.join(home, "bin", f"java{_EXE_SUFFIX}")
-                if os.path.isfile(exe):
-                    return exe
-        jdk_home = _find_jdk_home(ver)
-        if jdk_home:
-            exe = os.path.join(jdk_home, "bin", f"java{_EXE_SUFFIX}")
-            if os.path.isfile(exe):
-                return exe
-    for env_key in _JAVA_HOME_ENV_KEYS:
-        home = os.environ.get(env_key)
+    ver = int(version_java) if version_java else 25
+    for ek in _JAVA_HOME_ENV_KEYS:
+        home = os.environ.get(ek)
         if home:
             exe = os.path.join(home, "bin", f"java{_EXE_SUFFIX}")
-            if os.path.isfile(exe):
+            if os.path.isfile(exe) and _java_major_version(exe) == ver:
                 return exe
-    return "java"
+    jdk_home = _find_jdk_home(ver)
+    if jdk_home:
+        exe = os.path.join(jdk_home, "bin", f"java{_EXE_SUFFIX}")
+        if os.path.isfile(exe) and _java_major_version(exe) == ver:
+            return exe
+    if _java_major_version("java") == ver:
+        return "java"
+    raise RuntimeError(f"Java {ver} not found")
 
 
 def _find_jdk_home(target_ver):
@@ -1101,7 +1094,7 @@ def _launch_neoforge_gradlew(mc_version, args):
         spec.loader.exec_module(vc_mod)
         version_config = vc_mod.ALL_VERSIONS.get(mc_version, {})
 
-    java_ver = version_config.get("java", 21)
+    java_ver = version_config.get("java", 25)
     java_exe = find_java(java_ver)
     found_ver = _java_major_version(java_exe) if java_exe != "java" and os.path.isfile(java_exe) else 0
 
@@ -1153,7 +1146,7 @@ def _launch_neoforge_gradlew(mc_version, args):
 
 def main():
     parser = argparse.ArgumentParser(description="Launch Minecraft directly")
-    parser.add_argument("version", help="Version name (e.g. 1.21.7-forge-57.0.2)")
+    parser.add_argument("version", help="Version name (e.g. 26.2-forge-65.1.3)")
     parser.add_argument("--mc-dir", default=None, help=".minecraft directory")
     parser.add_argument("--java", default=None, help="Java executable path")
     parser.add_argument("--jvm-args", default="-Xmx4G -Xms1G", help="Extra JVM args")
@@ -1234,12 +1227,12 @@ def main():
                         _vc2 = _ilu.module_from_spec(_spec2)
                         _spec2.loader.exec_module(_vc2)
                         _entry2 = _vc2.ALL_VERSIONS.get(mc_version, {})
-                        java_ver_for_build = _entry2.get("java", 17)
+                        java_ver_for_build = _entry2.get("java", 25)
                     except Exception:
                         pass
-                # Fabric always needs JDK 17+ for Loom, even if MC itself uses Java 8
-                if loader_filter == "fabric" and java_ver_for_build < 17:
-                    java_ver_for_build = 17
+                # Minecraft 26.2 Fabric requires Java 25.
+                if loader_filter == "fabric" and java_ver_for_build < 25:
+                    java_ver_for_build = 25
                 build_env = os.environ.copy()
                 java_home_for_build = find_java(java_ver_for_build)
                 if java_home_for_build:
@@ -1323,7 +1316,7 @@ def main():
                 native_files.append(f)
     print(f"[LAUNCH] Natives: {len(native_files)} files in {natives_dir}")
 
-    java_ver = vj.get("javaVersion", {}).get("majorVersion", 21)
+    java_ver = vj.get("javaVersion", {}).get("majorVersion", 25)
     java_exe = args.java or find_java(java_ver)
     print(f"[LAUNCH] Java: {java_exe} (MC wants {java_ver})")
 

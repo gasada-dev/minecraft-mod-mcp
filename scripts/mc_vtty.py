@@ -7,7 +7,7 @@ No Kotlin MCP server needed — pure Python.
 Usage:
   python scripts/mc_vtty.py                              # start daemon
   python scripts/mc_vtty.py --send 'status'              # check state
-  python scripts/mc_vtty.py --send 'launch 1.21.7-forge-57.0.2'
+  python scripts/mc_vtty.py --send 'launch 26.2-forge-65.1.3'
   python scripts/mc_vtty.py --send 'screenshot menu'     # take screenshot
   python scripts/mc_vtty.py --send 'click_button_id 1'   # click by ID
   python scripts/mc_vtty.py --send 'type_text hello'     # type text
@@ -304,7 +304,7 @@ class McVtty:
         try:
             if cmd == "launch":
                 return self.launch(
-                    cmd_dict.get("version", "1.21.7-forge-57.0.2"),
+                    cmd_dict.get("version", "26.2-forge-65.1.3"),
                     cmd_dict.get("loader", "forge"),
                 )
             elif cmd == "status":
@@ -412,7 +412,7 @@ def send_command(cmd_str, port=VTTY_PORT):
     cmd_dict = {"cmd": cmd}
 
     if cmd == "launch":
-        cmd_dict["version"] = rest if rest else "1.21.7-forge-57.0.2"
+        cmd_dict["version"] = rest if rest else "26.2-forge-65.1.3"
     elif cmd == "click":
         coords = rest.split()
         if len(coords) >= 2:

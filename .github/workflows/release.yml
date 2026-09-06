@@ -2,381 +2,61 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  # ─── Step 0: Version gate — ensure all mod versions match the tag ───
   version-check:
-    name: Version Gate
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+        with: { python-version: "3.11" }
+      - run: python scripts/check_versions.py ${{ github.ref_name }}
 
-      - name: Check version consistency
-        run: python scripts/check_versions.py ${{ github.ref_name }}
-
-  # ─── Step 1: Build the shared common library ───
-  build-common:
+  build:
     needs: version-check
-    name: Build Common Library
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-common-${{ runner.os }}-${{ hashFiles('**/settings.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-common-${{ runner.os }}-
-
-      - name: Build common
-        run: .\gradlew.bat :packages:common:clean :packages:common:publish --no-daemon --console=plain
-
-      - name: Upload .maven-local
-        uses: actions/upload-artifact@v4
-        with:
-          name: maven-local
-          path: .maven-local/
-          retention-days: 1
-          # .maven-local starts with a dot (hidden dir); upload-artifact@v4
-          # skips hidden files by default, which left the artifact empty and
-          # broke every downstream mod build with "Artifact not found".
-          include-hidden-files: true
-
-  # ─── Step 2: Build all mods in parallel by JDK group ───
-  build-mods:
-    name: Build Mods (JDK ${{ matrix.jdk }})
-    needs: build-common
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        include:
-          - jdk: "8"
-            mods: |
-              1.7.2/forge
-              1.7.10/forge
-              1.8/forge
-              1.8.8/forge
-              1.8.9/forge
-              1.9.4/forge
-              1.10.2/forge
-              1.11/forge
-              1.11.2/forge
-              1.12/forge
-              1.12.1/forge
-              1.12.2/forge
-              1.13.2/forge
-              1.14.2/forge
-              1.14.3/forge
-              1.14.4/forge
-              1.15/forge
-              1.15.1/forge
-              1.15.2/forge
-              1.16.1/forge
-              1.16.2/forge
-              1.16.3/forge
-              1.16.4/forge
-              1.16.5/forge
-          - jdk: "17"
-            mods: |
-              1.16.5/fabric
-              1.14.2/fabric
-              1.14.3/fabric
-              1.14.4/fabric
-              1.15/fabric
-              1.15.1/fabric
-              1.15.2/fabric
-              1.16.1/fabric
-              1.16.2/fabric
-              1.16.3/fabric
-              1.16.4/fabric
-              1.17.1/forge
-              1.17.1/fabric
-              1.18/forge
-              1.18/fabric
-              1.18.1/forge
-              1.18.1/fabric
-              1.18.2/forge
-              1.18.2/fabric
-              1.19/forge
-              1.19/fabric
-              1.19.1/forge
-              1.19.1/fabric
-              1.19.2/forge
-              1.19.2/fabric
-              1.19.3/forge
-              1.19.3/fabric
-              1.19.4/forge
-              1.19.4/fabric
-              1.20/forge
-              1.20/fabric
-              1.20.1/forge
-              1.20.1/fabric
-              1.20.2/forge
-              1.20.2/fabric
-              1.20.3/forge
-              1.20.3/fabric
-              1.20.4/forge
-              1.20.4/fabric
-              1.20.4/neoforge
-          - jdk: "21"
-            mods: |
-              1.20.6/forge
-              1.20.6/fabric
-              1.20.6/neoforge
-              1.21/forge
-              1.21/fabric
-              1.21.1/forge
-              1.21.1/fabric
-              1.21.1/neoforge
-              1.21.3/forge
-              1.21.3/fabric
-              1.21.3/neoforge
-              1.21.4/forge
-              1.21.4/neoforge
-              1.21.5/forge
-              1.21.6/forge
-              1.21.7/forge
-              1.21.8/forge
-              1.21.9/forge
-              1.21.10/forge
-              1.21.11/forge
-              1.21.11/fabric
-              1.21.11/neoforge
-          - jdk: "25"
-            mods: |
-              26.1.2/forge
-              26.1.2/neoforge
-              26.2/forge
-              26.2/neoforge
-              26.2/fabric
+        loader: [forge, fabric, neoforge]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Restore .maven-local
-        uses: actions/download-artifact@v4
-        with:
-          name: maven-local
-          path: .maven-local/
-
       - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.jdk }}
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.gradle/jdks
-          key: gradle-jdk${{ matrix.jdk }}-${{ runner.os }}-${{ hashFiles('**/build.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-jdk${{ matrix.jdk }}-${{ runner.os }}-
-            gradle-common-${{ runner.os }}-
-
-      # FG 3/4.1-era mods (all in the JDK 8 lane) cannot fetch MCP snapshot
-      # mappings through Cloudflare with Java 8's TLS stack on a cold cache —
-      # pre-populate the Gradle cache with Python (modern TLS) instead.
-      - name: Prepare legacy build caches (FG 3/4.1)
-        if: matrix.jdk == '8'
-        shell: pwsh
-        env:
-          PYTHONUTF8: "1"
-        run: python scripts/prepare_cache.py
-
-      - name: Build mods
-        shell: pwsh
-        env:
-          GRADLE_OPTS: "-Xmx8G"
-        run: |
-          $ErrorActionPreference = "Continue"
-          $failedMods = @()
-          $mods = @'
-          ${{ matrix.mods }}
-          '@ -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-
-          foreach ($mod in $mods) {
-            $modPath = "packages/mods/$mod"
-            Write-Host "`n========================================"
-            Write-Host "  Building: $modPath"
-            Write-Host "========================================"
-
-            Push-Location $modPath
-            try {
-              $gradleVer = if (Test-Path "gradle/wrapper/gradle-wrapper.properties") { (Get-Content "gradle/wrapper/gradle-wrapper.properties" | Select-String "distributionUrl" | Select-Object -First 1) -replace '.*gradle-', '' -replace '-bin.*', '' } else { "8.0" }
-              $majorVer = $gradleVer.Split('.')[0]
-              $extraArgs = if ([int]$majorVer -ge 5) { "--warning-mode=summary" } else { "" }
-              if ($mod -match "/fabric$") {
-                $result = .\gradlew.bat clean build -x test --no-daemon --console=plain "-Dorg.gradle.jvmargs=-Xmx4G" $extraArgs 2>&1
-              } else {
-                $result = .\gradlew.bat clean jar --no-daemon --console=plain "-Dorg.gradle.jvmargs=-Xmx4G" $extraArgs 2>&1
-              }
-              if ($LASTEXITCODE -ne 0) {
-                $errFile = "build-error.log"
-                $result | Out-File -FilePath $errFile -Encoding UTF8
-                Write-Host "::warning file=$modPath/$errFile::Build failed for $mod (non-fatal)"
-                Write-Host $result
-                $failedMods += $mod
-              } else {
-                Write-Host "  [OK] $mod"
-              }
-            } catch {
-              Write-Host "::warning::Exception building $mod : $_"
-              $failedMods += $mod
-            } finally {
-              Pop-Location
-            }
-          }
-
-          if ($failedMods.Count -gt 0) {
-            Write-Host "::warning::Failed builds (non-fatal, JARs from successful mods will still be collected): $($failedMods -join ', ')"
-            # Don't exit 1 — some legacy mods (1.15/1.15.1 FG4) have CI-specific
-            # MCP setup race conditions. The release should still publish JARs
-            # from all mods that built successfully.
-          }
-
-          # Explicitly exit 0 so the step succeeds even if individual mods failed
-          # (the last gradlew.bat may have set $LASTEXITCODE to non-zero).
-          exit 0
-
-      - name: Collect JARs
-        shell: pwsh
-        run: |
-          $outDir = "release-jars"
-          New-Item -ItemType Directory -Path $outDir -Force
-
-          $mods = @'
-          ${{ matrix.mods }}
-          '@ -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-
-          foreach ($mod in $mods) {
-            $parts = $mod -split '/'
-            $mc = $parts[0]
-            $loader = $parts[1]
-            $jarDir = "packages/mods/$mod/build/libs"
-
-            if (Test-Path $jarDir) {
-              Get-ChildItem $jarDir -Filter "*.jar" | ForEach-Object {
-                if ($_.Name -notmatch "-sources|-dev|-slim") {
-                  $newName = "minecraft-mcp-$mc-$loader.jar"
-                  Copy-Item $_.FullName "$outDir/$newName"
-                  Write-Host "  Collected: $newName ($('{0:N1}' -f ($_.Length / 1KB)) KB)"
-                }
-              }
-            } else {
-              Write-Host "::warning::No build/libs found for $mod"
-            }
-          }
-
-          Write-Host "`nTotal JARs collected: $((Get-ChildItem $outDir).Count)"
-
+        with: { distribution: temurin, java-version: "25" }
+      - run: ./gradlew :packages:common:clean :packages:common:publish --no-daemon --console=plain
+      - run: ./gradlew clean build -x test --no-daemon --console=plain
+        working-directory: packages/mods/26.2/${{ matrix.loader }}
+      - run: |
+          mkdir release-jars
+          jar=$(find packages/mods/26.2/${{ matrix.loader }}/build/libs -name '*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | head -n1)
+          test -n "$jar"
+          cp "$jar" release-jars/minecraft-mcp-26.2-${{ matrix.loader }}.jar
       - uses: actions/upload-artifact@v4
         with:
-          name: mods-jdk${{ matrix.jdk }}
+          name: mod-26.2-${{ matrix.loader }}
           path: release-jars/
+          if-no-files-found: error
           retention-days: 1
 
-  # ─── Step 3: Publish all JARs to GitHub Release ───
   release:
-    name: Create GitHub Release
-    runs-on: windows-latest
-    needs: build-mods
-    permissions:
-      contents: write
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - uses: actions/download-artifact@v4
         with:
-          pattern: mods-jdk*
-          path: release-jars/
-
-      - name: Flatten and list all JARs
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path dist -Force
-
-          Get-ChildItem release-jars -Recurse -Filter "*.jar" | ForEach-Object {
-            Copy-Item $_.FullName "dist/" -Force
-          }
-
-          Write-Host "`n=== All JARs for release ==="
-          Get-ChildItem dist | ForEach-Object {
-            Write-Host "  $($_.Name)  ($('{0:N1}' -f ($_.Length / 1KB)) KB)"
-          }
-          Write-Host "Total: $((Get-ChildItem dist).Count) JARs"
-
-      - name: Build release notes from commit log
-        id: notes
-        shell: bash
-        run: |
-          # Generate a chronological commit log of master squash commits
-          # since the last stable release tag (skip prerelease tags).
-          CURRENT="${GITHUB_REF_NAME#v}"
-          # Find the latest stable tag (exclude prerelease tags).
-          PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot|wayland)([.0-9]*)$' | head -1 || true)
-          # If the current tag IS the latest stable, find the one before it
-          if [ "v${CURRENT}" = "$PREV_TAG" ] || [ "$CURRENT" = "${PREV_TAG#v}" ]; then
-            PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -vE '\-(rc|beta|alpha|pre|snapshot|wayland)([.0-9]*)$' | head -2 | tail -1 || true)
-          fi
-          if [ -n "$PREV_TAG" ]; then
-            RANGE="${PREV_TAG}..origin/master"
-          else
-            RANGE="origin/master"
-          fi
-          # Write to a temp file and use the delimiter form of $GITHUB_OUTPUT
-          # (the heredoc style can fail on Windows Git Bash).
-          TMPFILE=$(mktemp)
-          {
-            echo "## ${GITHUB_REF_NAME}"
-            echo ""
-            echo "### Commits"
-            git log $RANGE --pretty=format:"- %s (%h)" --no-merges
-            echo ""
-          } > "$TMPFILE"
-          {
-            echo "body<<RELEASE_NOTES_DELIMITER"
-            cat "$TMPFILE"
-            echo "RELEASE_NOTES_DELIMITER"
-          } >> "$GITHUB_OUTPUT"
-          rm -f "$TMPFILE"
-
-      - name: Detect prerelease
-        id: pre
-        shell: bash
-        run: |
-          TAG="${GITHUB_REF_NAME:-}"
-          if [[ "$TAG" =~ -(rc|beta|alpha|pre|snapshot)[0-9]*$ || "$TAG" =~ -wayland(\.[0-9]+)*$ ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+          pattern: mod-26.2-*
+          path: dist/
+          merge-multiple: true
+      - run: |
+          test "$(find dist -maxdepth 1 -name '*.jar' | wc -l)" -eq 3
+          for loader in forge fabric neoforge; do test -f "dist/minecraft-mcp-26.2-$loader.jar"; done
+      - uses: softprops/action-gh-release@v2
         with:
           files: dist/*.jar
-          body: ${{ steps.notes.outputs.body }}
-          prerelease: ${{ steps.pre.outputs.prerelease }}
           fail_on_unmatched_files: true

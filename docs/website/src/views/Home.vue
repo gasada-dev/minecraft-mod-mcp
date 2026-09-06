@@ -406,7 +406,7 @@ const steps = computed<Step[]>(() => [
   {
     titleKey: 'quickstart.step2.title',
     descKey: 'quickstart.step2.desc',
-    code: 'minecraft-mod-mcp launch 1.21.11 --loader fabric',
+    code: 'minecraft-mod-mcp launch 26.2 --loader fabric',
   },
   {
     titleKey: 'quickstart.step3.title',
@@ -433,17 +433,7 @@ interface VersionRow {
 }
 
 const versions: VersionRow[] = [
-  { version: '26.1.2', supported: ['forge', 'neoforge'] },
-  { version: '1.21.11', supported: ['forge', 'fabric', 'neoforge'] },
-  { version: '1.21.x', supported: ['forge', 'fabric', 'neoforge'] },
-  { version: '1.20.6', supported: ['forge', 'fabric', 'neoforge'] },
-  { version: '1.20.x', supported: ['forge', 'fabric', 'neoforge'] },
-  { version: '1.19.x', supported: ['forge', 'fabric'] },
-  { version: '1.18.x', supported: ['forge', 'fabric'] },
-  { version: '1.16.x', supported: ['forge', 'fabric'] },
-  { version: '1.12.2', supported: ['forge'] },
-  { version: '1.8.9', supported: ['forge'] },
-  { version: '1.7.x', supported: ['forge'] },
+  { version: '26.2', supported: ['forge', 'fabric', 'neoforge'] },
 ]
 
 function loaderColor(id: string): string {
@@ -504,7 +494,7 @@ const heroItems = computed(() => [
   `<p class="text-lg sm:text-xl font-medium mb-2 text-primary">${t('site.tagline')}</p>`,
   `<p class="text-base max-w-xl mx-auto" style="color: var(--text-tertiary)">${t('site.description')}</p>`,
   `<div class="flex flex-wrap items-center justify-center gap-3 mt-8">
-    <a href="https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.3.1-wayland.1" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
+    <a href="https://github.com/gasada-dev/minecraft-mod-mcp/releases/tag/v0.4.0-wayland.1" target="_blank" rel="noopener" class="btn-primary no-underline group"><span class="i-lucide-download w-4 h-4 mr-1.5"></span> ${t('hero.download')}</a>
     <a href="https://github.com/gasada-dev/minecraft-mod-mcp" target="_blank" rel="noopener" class="btn-ghost no-underline group"><span class="i-lucide-github w-4 h-4 mr-1.5 opacity-70 group-hover:opacity-100 transition-opacity"></span> GitHub</a>
   </div>`,
   `<div class="mt-10 animate-float opacity-20"><span class="i-lucide-chevrons-down inline-block w-6 h-6" style="color: var(--text-primary)"></span></div>`,

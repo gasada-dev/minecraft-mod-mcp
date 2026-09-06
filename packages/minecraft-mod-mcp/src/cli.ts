@@ -238,7 +238,6 @@ Options:
       typeof values["game-args"] === "string" ? (values["game-args"] as string) : undefined,
       values.server,
       values["server-port"],
-      versionArg,
     ),
     javaPath: typeof values.java === "string" ? values.java : javaExecPath(config) ?? undefined,
     playerName: account ? accountUsername(account) : PLAYER.defaultName,
@@ -671,23 +670,9 @@ async function runTui() {
   process.exit(1);
 }
 
-function mcVersionGte(version: string, target: string): boolean {
-  const parse = (v: string) => v.split(".").map(Number);
-  const a = parse(version), b = parse(target);
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const x = a[i] ?? 0, y = b[i] ?? 0;
-    if (x > y) return true;
-    if (x < y) return false;
-  }
-  return true;
-}
-
-function serverConnectArgs(host: string, port: number | string, mcVersion: string): string {
+function serverConnectArgs(host: string, port: number | string): string {
   const portStr = typeof port === "string" ? port : String(port);
-  if (mcVersionGte(mcVersion, "1.20.5")) {
-    return `--quickPlayMultiplayer ${host}:${portStr}`;
-  }
-  return `--server ${host} --port ${portStr}`;
+  return `--quickPlayMultiplayer ${host}:${portStr}`;
 }
 
 function buildExtraGameArgs(
@@ -695,14 +680,13 @@ function buildExtraGameArgs(
   extraGameArgs?: string,
   server?: string | boolean,
   serverPort?: string | boolean,
-  mcVersion?: string,
 ): string | undefined {
   const parts: string[] = [];
   if (base) parts.push(base);
   if (extraGameArgs) parts.push(extraGameArgs);
   if (typeof server === "string") {
     const port = typeof serverPort === "string" ? serverPort : String(GAME.defaultServerPort);
-    parts.push(serverConnectArgs(server, port, mcVersion ?? "1.21.11"));
+    parts.push(serverConnectArgs(server, port));
   }
   return parts.length > 0 ? parts.join(" ") : undefined;
 }

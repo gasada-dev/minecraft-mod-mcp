@@ -8,8 +8,9 @@ tests/
 ├── README.md
 ├── reference-screenshots/    # Baseline screenshots for CI comparison
 │   ├── .gitkeep
-│   ├── ref_1.21.7_forge.png
-│   ├── ref_1.12.2_forge.png
+│   ├── ref_26.2_forge.png
+│   ├── ref_26.2_fabric.png
+│   └── ref_26.2_neoforge.png
 │   └── ...
 └── metadata/                 # Test configuration and reports
     ├── .gitkeep

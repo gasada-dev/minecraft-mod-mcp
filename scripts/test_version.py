@@ -1,8 +1,8 @@
 """Per-version automated test runner for Minecraft MCP mods.
 
 Usage:
-  python scripts/test_version.py 1.21.7-forge-57.0.2
-  python scripts/test_version.py 1.21.7-forge-57.0.2 --timeout 300
+  python scripts/test_version.py 26.2-forge-65.1.3
+  python scripts/test_version.py 26.2-forge-65.1.3 --timeout 300
   python scripts/test_version.py --all           # test all installed versions
   python scripts/test_version.py --all -j 3      # parallel (careful: multiple MC instances)
 """
@@ -22,7 +22,7 @@ SERVER_JAR = ROOT / "build" / "libs" / "mcp-server-0.1.1.jar"
 MC_DIR = Path(os.environ.get("APPDATA", os.path.expanduser("~"))) / ".minecraft"
 
 sys.path.insert(0, str(SCRIPTS))
-from version_config import ALL_VERSIONS, get_loaders, get_fg_era, get_jdk_home, find_jdk17
+from version_config import ALL_VERSIONS, get_loaders, get_fg_era, get_jdk_home
 
 
 @dataclass
@@ -121,7 +121,7 @@ _server_output_lines: list = []
 def _start_mcp_server() -> subprocess.Popen:
     global _server_output_lines
     from launch_mc import find_java
-    java = find_java(21)
+    java = find_java(25)
     proc = subprocess.Popen(
         [java, "-jar", str(SERVER_JAR)],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -221,12 +221,6 @@ def _ensure_websocket_deps(mc_dir: Path, mc_version: str = "") -> list:
     deps = [
         ("org.java-websocket", "Java-WebSocket", "1.5.4"),
     ]
-    mc_key = _resolve_mc_key(mc_version) if mc_version else ""
-    era = get_fg_era(mc_key) if mc_key else None
-    needs_slf4j = era and era.get("java", 21) <= 8
-    if needs_slf4j:
-        deps.append(("org.slf4j", "slf4j-api", "1.7.36"))
-        deps.append(("org.slf4j", "slf4j-simple", "1.7.36"))
     lib_base = mc_dir / "libraries"
     for group, artifact, ver in deps:
         rel = os.path.join(*group.split("."), artifact, ver, f"{artifact}-{ver}.jar")
@@ -267,16 +261,7 @@ def _start_mc(version: str) -> subprocess.Popen:
     cp = build_classpath(vj, mc_dir=str(MC_DIR))
     natives_dir = extract_natives(vj, mc_dir=str(MC_DIR))
     mc_key = _resolve_mc_key(version)
-    mc_info = ALL_VERSIONS.get(mc_key, {})
-    if "java" in mc_info:
-        java_ver = mc_info["java"]
-    else:
-        era_config = get_fg_era(mc_key) if mc_key else None
-        if era_config:
-            java_ver = era_config.get("java", 8)
-        else:
-            java_ver = vj.get("javaVersion", {}).get("majorVersion", 21)
-    java_exe = find_java(java_ver)
+    java_exe = find_java(25)
     jvm_args = build_jvm_args(vj, natives_dir, mc_dir=str(MC_DIR), java_exe=java_exe)
     game_args = build_game_args(vj, version, mc_dir=str(MC_DIR))
 
@@ -339,7 +324,7 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
     print(f"{'='*60}", flush=True)
 
     # Phase 1: Build
-    print(f"[1/5] Building mod...", flush=True)
+    print(f"[1/4] Building mod...", flush=True)
     mod_dir = _resolve_mod_dir(version, loader)
     if not mod_dir.exists():
         result.errors.append("No mod project directory")
@@ -349,19 +334,8 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
     gradlew = str(mod_dir / "gradlew.bat") if sys.platform == "win32" else str(mod_dir / "gradlew")
 
     mc_key = _resolve_mc_key(version)
-    mc_info = ALL_VERSIONS.get(mc_key, {})
-    era_config = get_fg_era(mc_key)
-
     env = os.environ.copy()
-    if "java" in mc_info:
-        java_ver = mc_info["java"]
-    elif era_config:
-        java_ver = era_config.get("java", 8)
-    else:
-        java_ver = 8
-    jdk = get_jdk_home(java_ver)
-    if not jdk and java_ver == 17:
-        jdk = find_jdk17()
+    jdk = get_jdk_home(25)
     if jdk:
         env["JAVA_HOME"] = jdk
     env.pop("JAVA_TOOL_OPTIONS", None)
@@ -392,7 +366,7 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
         return result
 
     # Phase 2: Install mod + launch
-    print(f"[2/5] Installing mod and launching MC...")
+    print(f"[2/4] Installing mod and launching MC...")
     clear_mods()
     install_mod(version, loader)
     kill_all_java()
@@ -437,17 +411,8 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
         # Give it a moment after connection
         time.sleep(5)
 
-        # Phase 3: Check window
-        print(f"[3/5] Checking window...")
-        from test_daemon import WindowController
-        wc = WindowController()
-        info = wc.find_mc_window()
-        if info:
-            result.window_title = info[1]
-            print(f"  Window: {info[1]}")
-
-        # Phase 4: Ping via server stdin
-        print(f"[4/5] Testing ping...")
+        # Phase 3: Ping via server stdin
+        print(f"[3/4] Testing ping...")
         if result.mod_connected and server_proc:
             pre_count = len(_server_output_lines)
             _send_server_cmd(server_proc, "ping", {})
@@ -470,8 +435,8 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
             if not result.ping_ok:
                 result.errors.append("Ping response not found")
 
-        # Phase 5: Screenshot via MCP server -> game mod pipeline
-        print(f"[5/5] Testing screenshot...")
+        # Phase 4: Screenshot via MCP server -> game mod pipeline
+        print(f"[4/4] Testing screenshot...")
         ss_dir = ROOT / "screenshots"
         ss_dir.mkdir(exist_ok=True)
         ss_path = str(ss_dir / f"test_{version}_{loader}_{int(time.time())}.png")
@@ -495,18 +460,6 @@ def test_single(version: str, loader: str, timeout: int = 300) -> TestResult:
                 elif any("screenshot success" in l for l in _server_output_lines):
                     result.screenshot_method = "mod_pipeline"
                     print(f"  Screenshot via mod pipeline (server-gl)")
-        if not getattr(result, "screenshot_method", None):
-            try:
-                wc = WindowController()
-                wc.focus_mc()
-                time.sleep(1)
-                data = wc.screenshot_window(save_path=ss_path)
-                if data:
-                    result.screenshot_method = "window_fallback"
-                    print(f"  Screenshot saved (fallback): {ss_path}")
-            except Exception as e:
-                result.errors.append(f"Screenshot error: {e}")
-
         # Let MC run a bit more for observation
         if mc_proc and mc_proc.poll() is None:
             time.sleep(5)
@@ -595,7 +548,7 @@ def test_all_installed(max_parallel: int = 1):
 
 def main():
     parser = argparse.ArgumentParser(description="Test MC MCP mods per version")
-    parser.add_argument("version", nargs="?", help="Version to test (e.g. 1.21.7-forge-57.0.2)")
+    parser.add_argument("version", nargs="?", help="Version to test (e.g. 26.2-forge-65.1.3)")
     parser.add_argument("--loader", default="forge", help="Loader (forge/neoforge/fabric)")
     parser.add_argument("--timeout", type=int, default=300, help="MC process timeout (seconds)")
     parser.add_argument("--all", action="store_true", help="Test all installed versions")
@@ -613,5 +566,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -9,7 +9,7 @@ Usage:
   python scripts/release.py v0.1.1
   python scripts/release.py v0.1.1 --no-upload
   python scripts/release.py v0.1.1 --loader forge --loader fabric
-  python scripts/release.py v0.1.1 --mc 1.21.11
+   python scripts/release.py v0.1.1 --mc 26.2
 """
 import subprocess
 import sys
@@ -87,32 +87,7 @@ def strip_v(version):
 
 
 def resolve_java_home(mc, info, loader="forge"):
-    fg_era = info.get("fg_era", "")
-    java_ver = info.get("java", 8)
-
-    if loader == "forge" and fg_era in ("fg12_gtnh", "fg21", "fg22", "fg23", "fg3"):
-        return _find_jdk_home(8)
-    if loader == "forge" and fg_era == "fg41":
-        return _find_jdk_home(8)
-    if loader == "fabric":
-        if java_ver >= 21:
-            jdk21 = _find_jdk_home(21)
-            if jdk21:
-                return jdk21
-        return _find_jdk_home(17) or _find_jdk_home(21)
-    if loader == "neoforge":
-        jdk = _find_jdk_home(java_ver)
-        if jdk:
-            return jdk
-        return _find_jdk_home(21) or _find_jdk_home(17)
-    jdk = _find_jdk_home(java_ver)
-    if jdk:
-        return jdk
-    if java_ver in (16, 17):
-        return _find_jdk_home(17)
-    if java_ver >= 21:
-        return _find_jdk_home(21)
-    return None
+    return _find_jdk_home(info["java"])
 
 
 _print_lock = threading.Lock()
@@ -358,35 +333,14 @@ def main():
     total = len(tasks)
     print(f"Building {total} mod projects...\n")
 
-    serial_keys = set()
-    for mc, info in ALL_VERSIONS.items():
-        fg_era = info.get("fg_era", "")
-        if fg_era in ("fg21", "fg22", "fg23", "fg3", "fg41"):
-            for loader in get_loaders(mc):
-                if loader == "forge":
-                    serial_keys.add(f"{mc}/{loader}")
-
-    serial_tasks = [t for t in tasks if f"{t[0]}/{t[1]}" in serial_keys]
-    parallel_tasks = [t for t in tasks if f"{t[0]}/{t[1]}" not in serial_keys]
-
     done = 0
     start_all = time.time()
     results = {"success": [], "fail": [], "skip": []}
 
-    if serial_tasks:
-        print(f"--- Serial builds ({len(serial_tasks)} old Forge) ---")
-        for t in serial_tasks:
-            done += 1
-            key, status, entry = _build_one(t)
-            elapsed = entry.get("time", 0)
-            lbl = {"success": "OK", "fail": "FAIL", "skip": "SKIP"}[status]
-            print(f"  [{done}/{total}] {lbl} {key} ({elapsed:.1f}s)")
-            results[status].append(entry)
-
-    if parallel_tasks:
-        print(f"\n--- Parallel builds ({len(parallel_tasks)} mods, {args.jobs} workers) ---")
+    if tasks:
+        print(f"\n--- Parallel builds ({len(tasks)} mods, {args.jobs} workers) ---")
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-            future_map = {pool.submit(_build_one, t): t for t in parallel_tasks}
+            future_map = {pool.submit(_build_one, t): t for t in tasks}
             for future in as_completed(future_map):
                 done += 1
                 key, status, entry = future.result()

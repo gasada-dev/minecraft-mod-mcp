@@ -11,7 +11,6 @@ import { GAME, MCP, PATHS, DOWNLOAD } from "./defaults.js";
 import { fetchWithFallback, downloadWithNativeFallback } from "./proxy.js";
 import { runForgeProcessors } from "./forgeProcessor.js";
 import { findJavaForVersion } from "./platform.js";
-import { detectJavas } from "./javaDetect.js";
 
 export interface ForgeInstallProfileLegacy {
   install: {
@@ -311,7 +310,7 @@ export async function downloadForgeInstaller(
 
   // Produce the remapped+patched client artifacts the version JSON launches
   // against. Try the fast headless processor replay first; on some modern
-  // Forge versions (1.21.11 etc.) our FART output diverges from the patch
+  // Forge FART output diverges from the patch
   // data's expected checksums and the binarypatcher fails. In that case fall
   // back to the official installer jar, which is authoritative (but slow and
   // can hang on very old Forge installers, so it's the fallback, not the
@@ -392,15 +391,9 @@ async function tryOfficialInstaller(
   return true;
 }
 
-/** Resolve a Java executable (any JDK 8+) for running installer processor tools. */
+/** Resolve a Java 25 executable for installer processor tools. */
 function processorJavaExecutable(): string {
-  for (const v of [17, 21, 8, 16]) {
-    const exe = findJavaForVersion(v);
-    if (exe) return exe;
-  }
-  const all = detectJavas();
-  if (all.length > 0) return `${all[0].path}/bin/java`;
-  return "java";
+  return findJavaForVersion(25);
 }
 
 async function runForgeInstallerProcessors(

@@ -4,12 +4,12 @@ plugins {
 }
 
 group = "xyz.langyo.minecraft.mcp"
-version = "0.3.1-wayland.1"
+version = "0.4.0-wayland.1"
 
 java {
-    toolchain { languageVersion = JavaLanguageVersion.of(21) }
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain { languageVersion = JavaLanguageVersion.of(25) }
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {

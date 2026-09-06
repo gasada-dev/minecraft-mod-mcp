@@ -8,9 +8,9 @@ Used by GitHub Actions workflows to:
   - Generate test summary reports
 
 Usage:
-  python scripts/ci_helper.py smoke --mc-ver 1.21.7 --loader forge --jdk-ver 21
-  python scripts/ci_helper.py screenshot-test --mc-ver 1.21.7 --loader forge
-  python scripts/ci_helper.py e2e --mc-ver 1.21.7 --loader forge --world test-world
+  python scripts/ci_helper.py smoke --mc-ver 26.2 --loader forge --jdk-ver 25
+  python scripts/ci_helper.py screenshot-test --mc-ver 26.2 --loader forge
+  python scripts/ci_helper.py e2e --mc-ver 26.2 --loader forge --world test-world
 """
 
 import argparse
@@ -44,7 +44,7 @@ def setup_mc_version(mc_ver, loader, mc_dir=None):
     """Ensure a MC version is installed in .minecraft before launching.
 
     Downloads vanilla JSON+JAR if needed, installs Forge/NeoForge/Fabric.
-    Returns the version name (e.g. '1.21.7-forge-57.0.2').
+    Returns the version name (e.g. '26.2-forge-65.1.3').
     """
     mc = mc_dir or str(MC_DIR)
 
@@ -120,9 +120,9 @@ def _install_fabric_json(mc_ver, mc):
         info = ALL_VERSIONS.get(mc_ver, {})
         pinned = info.get("fabric_loader")
         if not pinned:
-            pinned = _LEGACY_FABRIC_LOADERS.get(mc_ver, "0.16.14")
+            pinned = "0.19.5" if mc_ver == "26.2" else None
     except Exception:
-        pinned = "0.16.14"
+        pinned = "0.19.5" if mc_ver == "26.2" else None
     loader_ver = pinned
     loader_info = next((v for v in versions if v["loader"]["version"] == loader_ver), None)
     if loader_info is None:
@@ -145,21 +145,8 @@ def _install_fabric_json(mc_ver, mc):
     return version_name
 
 
-# Fabric loader pins for smoke tests on pre-26.x versions (matches the
-# builds' loader tables; newest 0.19.x cannot load these games).
-_LEGACY_FABRIC_LOADERS = {
-    "1.14.2": "0.16.14", "1.14.3": "0.16.14", "1.14.4": "0.16.14",
-    "1.15": "0.16.14", "1.15.1": "0.16.14", "1.15.2": "0.16.14",
-    "1.16.1": "0.16.14", "1.16.2": "0.16.14", "1.16.3": "0.16.14",
-    "1.16.4": "0.16.14", "1.16.5": "0.16.14",
-    "1.17.1": "0.16.14", "1.18.2": "0.16.14", "1.19.4": "0.16.14",
-    "1.20.4": "0.16.14", "1.20.6": "0.16.14",
-    "1.21.11": "0.16.14",
-}
-
-
 def _fabric_loader_pin(mc_ver: str) -> str | None:
-    """Loader version for a MC version: version_config pin, else the legacy table."""
+    """Return Fabric 0.19.5 for supported Minecraft 26.2."""
     try:
         from version_config import ALL_VERSIONS
         info = ALL_VERSIONS.get(mc_ver, {})
@@ -167,7 +154,7 @@ def _fabric_loader_pin(mc_ver: str) -> str | None:
             return info["fabric_loader"]
     except Exception:
         pass
-    return _LEGACY_FABRIC_LOADERS.get(mc_ver, "0.16.14")
+    return "0.19.5" if mc_ver == "26.2" else None
 
 
 def _find_installed(mc_ver: str, loader: str, mc_dir: str | None = None) -> str | None:
@@ -711,23 +698,9 @@ def run_smoke_test(mc_ver, loader, jdk_ver, mod_jar, headless=True, world_name=N
                                        os.environ.get(f"JAVA_HOME_{jdk_ver}",
                                                        os.environ.get("JAVA_HOME", "")))
 
-    # -Djava.awt.headless=true is two-sided on Xvfb: LWJGL2 (MC <= 1.12)
-    # fails to open its X display with it ("Could not open X display
-    # connection"), while LWJGL3-era loads benefit (Forge >= 1.20.5 skips
-    # its EarlyDisplay window when AWT is headless). Apply it only to
-    # MC >= 1.13.
-    parts = []
-    try:
-        major = int(mc_ver.split(".")[0])
-    except ValueError:
-        major = 1
-    if major >= 13:
-        parts.append("-Djava.awt.headless=true")
-    # Forge >= 1.20.5 opens an early GL window that times out under
-    # Xvfb/llvmpipe ("Timed out trying to setup the Game Window");
-    # older loaders ignore the property.
+    parts = ["-Djava.awt.headless=true"]
     if loader == "forge":
-        parts.append("-Dforge.disableEarlyDisplay=true")
+      parts.append("-Dforge.disableEarlyDisplay=true")
     if world_name:
         parts.append(f"-Dmcp.test.world={world_name}")
     extra_jvm = " ".join(parts)
@@ -959,10 +932,11 @@ def main():
     smoke = subparsers.add_parser("smoke", help="Run headless smoke test")
     smoke.add_argument("--mc-ver", required=True)
     smoke.add_argument("--loader", required=True)
-    smoke.add_argument("--jdk-ver", default="21")
+    smoke.add_argument("--jdk-ver", default="25")
     smoke.add_argument("--mod-jar", help="Path to mod JAR (auto-detect if omitted)")
     smoke.add_argument("--world", help="World save name to use")
     smoke.add_argument("--output-json", help="Save results to JSON file")
+    smoke.add_argument("--dry-run", action="store_true", help="Print resolved smoke test inputs without launching Minecraft")
 
     screenshot = subparsers.add_parser("screenshot-test", help="Run screenshot verification test")
     screenshot.add_argument("--mc-ver", required=True)
@@ -974,7 +948,7 @@ def main():
     e2e = subparsers.add_parser("e2e", help="Run full E2E test")
     e2e.add_argument("--mc-ver", required=True)
     e2e.add_argument("--loader", required=True)
-    e2e.add_argument("--jdk-ver", default="21")
+    e2e.add_argument("--jdk-ver", default="25")
     e2e.add_argument("--mod-jar", required=True)
     e2e.add_argument("--world", default="CI_TestWorld")
     e2e.add_argument("--output-json", help="Save results to JSON file")
@@ -982,6 +956,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == "smoke":
+        if args.dry_run:
+            print(f"SMOKE DRY RUN: mc={args.mc_ver} loader={args.loader} jdk={args.jdk_ver}")
+            return
         mod_jar = args.mod_jar or _find_mod_jar(args.mc_ver, args.loader)
         if not mod_jar:
             _log("ERROR: No mod JAR found")

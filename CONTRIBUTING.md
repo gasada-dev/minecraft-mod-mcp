@@ -8,7 +8,7 @@ Thanks for your interest in contributing! This guide covers the development setu
 
 ### Prerequisites
 
-- JDK 21 (Corretto recommended)
+- JDK 25
 - Python 3.11+
 - Node.js 20+
 
@@ -29,10 +29,10 @@ just full
 just daemon
 
 # Launch Minecraft with the mod for a specific version
-just launch 1.21.7 forge
+just launch 26.2 forge
 
 # Run an end-to-end smoke test
-just smoke 1.21.7
+just smoke 26.2
 ```
 
 ## Project Structure
@@ -42,20 +42,19 @@ minecraft-mcp/
 ├── packages/
 │   ├── common/                  # Shared Java library (HTTP server, reflection, input injection)
 │   │   └── src/main/java/xyz/langyo/minecraft/mcp/common/
-│   ├── mods/<version>/          # Per-version mod entry points (1.8.9 – 26.1.2)
+│   ├── mods/26.2/               # Forge, Fabric, and NeoForge entry points
 │   └── minecraft-mod-mcp/       # TypeScript MCP bridge (npm package)
 │       └── src/                 # MCP server, port discovery, transport handlers
 ├── scripts/                     # Python build/test/launch scripts
 ├── docs/
 │   ├── guides/                  # User documentation (English and Russian)
-│   └── research/                # Technical research per version/loader
 └── tests/                       # Test metadata and reference screenshots
 ```
 
 ## How It Works
 
 1. The Java mod runs an HTTP server on port 9876 inside Minecraft
-2. Java reflection handles cross-version compatibility (same code works for 1.8.9 through 26.1.2)
+2. Java reflection handles Minecraft 26.2 compatibility
 3. The TypeScript MCP bridge discovers the mod on the network and exposes MCP tools
 4. AI tools connect via standard SSE-based MCP protocol
 
@@ -63,7 +62,7 @@ minecraft-mcp/
 
 ```bash
 # Smoke test a specific version
-just smoke 1.21.7
+just smoke 26.2
 
 # TypeScript unit tests
 cd packages/minecraft-mod-mcp && npm test
@@ -91,7 +90,7 @@ Examples:
 
 ```
 Add MCP game control tools.
-Fix crash when switching dimensions on Forge 1.21.7.
+Fix crash when switching dimensions on Forge 26.2.
 Restructure documentation for modder-first experience.
 ```
 
