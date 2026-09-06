@@ -508,7 +508,12 @@ def get_screenshot(mod_url, timeout=60):
         headers={"User-Agent": "minecraft-mcp-ci"},
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read()
+        data = resp.read()
+    if data.startswith(b"{"):
+        original = json.loads(data).get("original", "")
+        if original.startswith("data:image/png;base64,"):
+            return base64.b64decode(original.split(",", 1)[1])
+    return data
 
 
 def verify_screenshot(png_data, min_size_kb=1):
@@ -885,14 +890,18 @@ def run_e2e_test(mc_ver, loader, jdk_ver, mod_jar, world_name, timeout=600):
                 pass
         return resp
 
-    def click_labeled_button(label):
-        widgets = parse_response(api_call(mod_url, "enumerate_widgets", {}))
-        if not isinstance(widgets, dict):
-            raise RuntimeError(f"invalid widget list: {widgets}")
-        for widget in widgets.get("widgets", []):
-            if widget.get("label") == label and widget.get("press"):
-                return api_call(mod_url, "click_button_index", {"index": str(widget["i"])})
-        raise RuntimeError(f"button not found: {label}; screen={widgets.get('screen')}")
+    def click_labeled_button(label, timeout=20):
+        deadline = time.time() + timeout
+        screen = "unknown"
+        while time.time() < deadline:
+            widgets = parse_response(api_call(mod_url, "enumerate_widgets", {}))
+            if isinstance(widgets, dict):
+                screen = widgets.get("screen", screen)
+                for widget in widgets.get("widgets", []):
+                    if widget.get("label") == label and widget.get("press"):
+                        return api_call(mod_url, "click_button_index", {"index": str(widget["i"])})
+            time.sleep(1)
+        raise RuntimeError(f"button not found: {label}; screen={screen}")
 
     try:
         api_call(mod_url, "enter_control_mode", {})
