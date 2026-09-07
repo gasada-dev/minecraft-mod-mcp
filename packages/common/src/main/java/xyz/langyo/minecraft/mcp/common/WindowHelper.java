@@ -42,6 +42,28 @@ public final class WindowHelper {
         return v > 0 ? v : 0;
     }
 
+    public static int getFramebufferSize(Object mc, boolean isWidth) {
+        try {
+            Object window = findWindowObject(mc);
+            if (window == null) return 0;
+            int fallback = 0;
+            for (Field f : ReflectionCache.getAllFields(window.getClass())) {
+                if (f.getType() != int.class) continue;
+                String n = f.getName().toLowerCase(java.util.Locale.ROOT);
+                f.setAccessible(true);
+                if (isWidth ? n.contains("framebufferwidth") : n.contains("framebufferheight")) {
+                    return f.getInt(window);
+                }
+                if (fallback <= 0 && (n.equals("width") && isWidth || n.equals("height") && !isWidth)) {
+                    fallback = f.getInt(window);
+                }
+            }
+            return fallback;
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
     public static int getDisplayHeight(Object mc) {
         int v = ReflectionCache.getIntFieldByNames(mc, "displayHeight", "field_71440_d", "height");
         return v > 0 ? v : 0;

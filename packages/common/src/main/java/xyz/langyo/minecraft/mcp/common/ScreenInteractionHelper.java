@@ -78,8 +78,10 @@ public final class ScreenInteractionHelper {
             ReflectionHelper.dbg("guiClick: gui(" + x + "," + y + ") screen=" + screenName);
             double gx = (double) x;
             double gy = (double) y;
-            int winW = WindowHelper.getDisplayWidth(mc);
-            int winH = WindowHelper.getDisplayHeight(mc);
+            int winW = WindowHelper.getFramebufferSize(mc, true);
+            int winH = WindowHelper.getFramebufferSize(mc, false);
+            if (winW <= 0) winW = WindowHelper.getDisplayWidth(mc);
+            if (winH <= 0) winH = WindowHelper.getDisplayHeight(mc);
             if (winW <= 0) { try { winW = (int) Class.forName("org.lwjgl.glfw.GLFW").getMethod("glfwGetWindowSize", long.class, java.nio.IntBuffer.class, java.nio.IntBuffer.class).invoke(null, 0L, java.nio.IntBuffer.allocate(1), java.nio.IntBuffer.allocate(1)); } catch (Exception ignored) {} }
             if (winW <= 0) winW = 854;
             if (winH <= 0) winH = 480;
@@ -87,7 +89,10 @@ public final class ScreenInteractionHelper {
             for (Field sf : ReflectionCache.getAllFields(screen.getClass())) {
                 if (sf.getType() != int.class) continue;
                 try { sf.setAccessible(true); int sv = sf.getInt(screen);
-                    if (sv > 0 && sv < 10000) {
+                    String sfn = sf.getName();
+                    if (sfn.equals("width") && sv > 0 && sv < 10000) maxField1 = sv;
+                    else if (sfn.equals("height") && sv > 0 && sv < 10000) maxField2 = sv;
+                    else if (sv > 0 && sv < 10000 && (maxField1 <= 0 || maxField2 <= 0)) {
                         if (sv > maxField1) { maxField2 = maxField1; maxField1 = sv; }
                         else if (sv > maxField2) { maxField2 = sv; }
                     }
@@ -276,8 +281,10 @@ public final class ScreenInteractionHelper {
                             try {
                                 gm.setAccessible(true);
                                 int val = ((Number) gm.invoke(child)).intValue();
-                                if (gmn.contains("46426")) cx = val;
-                                else if (gmn.contains("46427")) cy = val;
+                                if (gmn.equals("getX") || gmn.contains("46426")) cx = val;
+                                else if (gmn.equals("getY") || gmn.contains("46427")) cy = val;
+                                else if (gmn.equals("getWidth") || gmn.contains("25404")) { if (cw < 0) cw = val; }
+                                else if (gmn.equals("getHeight") || gmn.contains("25405")) { if (ch < 0) ch = val; }
                                 else if (gmn.contains("25368")) { if (cright < 0) cright = val; }
                                 else if (gmn.contains("25364")) { if (cbottom < 0) cbottom = val; }
                                 else if (gmn.contains("55442")) { if (cright < 0) cright = val; }
